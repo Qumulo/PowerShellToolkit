@@ -28,7 +28,7 @@ Run the following command in an elevated PowerShell session to install the rollu
 Install-Module -Name Qumulo
 ```
 
-This module runs on Windows PowerShell with [.NET Framework 4.7.2](https://dotnet.microsoft.com/download/dotnet-framework-runtime) or greater, or [the latest version of PowerShell 7](https://github.com/PowerShell/PowerShell/releases/latest). 
+This module runs on PowerShell 7 or greater version. [The latest version](https://github.com/PowerShell/PowerShell/releases/latest). 
 
 If you have an earlier version of the Qumulo PowerShell modules installed from the PowerShell Gallery and would like to update to the latest version, run the following commands in an elevated PowerShell session:
 
