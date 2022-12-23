@@ -24,7 +24,7 @@ jobs:
         shell: pwsh
         run: |
           mkdir /tmp/Qumulo
-          cp -r ./* /tmp/Qumulo/
+          cp -r ./PowerShellToolkit/* /tmp/Qumulo/
           # Import-Module /tmp/Qumulo/Qumulo.psd1 -WarningAction SilentlyContinue -Force
           # Install-Module -Name PowerShellGet -RequiredVersion "3.0.13-beta" -AllowPrerelease -Repository PSGallery -Force
           Publish-Module -Path /tmp/Qumulo -NuGetApiKey oy2krfyeixtbixz3d4daothmftaykbyevehdevqefpvziq -Verbose -SkipAutomaticTags
