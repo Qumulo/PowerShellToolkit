@@ -80,3 +80,15 @@ Import-Module -Name ($PSScriptRoot + "\QumuloFile.ps1") -WarningAction SilentlyC
 
 # Qumulo Replication functions
 Import-Module -Name ($PSScriptRoot + "\QumuloReplication.ps1") -WarningAction SilentlyContinue -Force
+
+# Qumulo local users functions
+Import-Module -Name ($PSScriptRoot + "\QumuloLocalUsers.ps1") -WarningAction SilentlyContinue -Force
+
+# Qumulo local groups functions
+Import-Module -Name ($PSScriptRoot + "\QumuloLocalGroups.ps1") -WarningAction SilentlyContinue -Force
+
+# Qumulo directory delete functions
+Import-Module -Name ($PSScriptRoot + "\QumuloTreeDelete.ps1") -WarningAction SilentlyContinue -Force
+
+# Qumulo analytics functions
+Import-Module -Name ($PSScriptRoot + "\QumuloAnalytics.ps1") -WarningAction SilentlyContinue -Force

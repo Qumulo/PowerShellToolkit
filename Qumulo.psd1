@@ -12,7 +12,7 @@
 RootModule = 'Qumulo.psm1'
 
 # Version number of this module.
-ModuleVersion = '5.2.0.2'
+ModuleVersion = '5.2.1'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -75,12 +75,15 @@ ScriptsToProcess = 'QumuloHelp.ps1', 'QumuloSession.ps1', 'QumuloQuota.ps1',
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = 'Get-QQHelp', 'Get-QQADSettings', 'Get-QQADStatus', 'Get-QQADMonitor', 
                'Join-QQADDomain', 'Leave-QQADDomain', 'Cancel-QQADOperation', 
-               'Set-QQADSettings', 'Reconfigure-QQADDomain', 'Get-QQSyslogConfig', 
-               'Get-QQSyslogStatus', 'Set-QQSyslogConfig', 'Get-QQCloudWatchConfig', 
+               'Set-QQADSettings', 'Reconfigure-QQADDomain', 'Get-QQADDNToAccount',
+               'Get-QQADUserSIDs', 'Get-QQADUIDtoSIDs', 'Get-QQADSIDtoUID', 'Get-QQADSIDtoUsername',
+               'Get-QQADSIDtoGID', 'Get-QQADGIDtoSIDs', 'Get-QQADSIDtoExpandedGroupSIDs',
+               'Get-QQSyslogConfig', 'Get-QQSyslogStatus', 'Set-QQSyslogConfig', 'Get-QQCloudWatchConfig', 
                'Get-QQCloudWatchStatus', 'Set-QQCloudWatchConfig', 
-               'Get-QQClusterSettings', 'List-QQNodes', 'Get-QQEncryptionStatus', 
+               'Get-QQClusterSettings', 'List-QQNodes', 'List-QQUnconfiguredNodes','Get-QQEncryptionStatus', 
                'Get-QQNodeState', 'List-QQClusterSlots', 'Get-QQChassisStatus', 
                'Get-QQProtectionStatus', 'Get-QQRestriperStatus', 'Get-QQVersion', 
+               'Get-QQSSLCaCertificate',
                'Get-QQFSStatistics', 'Get-QQMonitoringConfig', 
                'List-QQMonitoringStatus', 'Get-QQVPNKeys', 'List-QQNetworks', 
                'Get-QQNetwork', 'Add-QQNetwork', 'Delete-QQNetwork', 
@@ -97,16 +100,24 @@ FunctionsToExport = 'Get-QQHelp', 'Get-QQADSettings', 'Get-QQADStatus', 'Get-QQA
                'Abort-QQObjectRelationship', 'List-QQSMBShares', 'List-QQSMBShare', 
                'Add-QQSMBShare', 'Delete-QQSMBShare', 'Add-QQSMBSharePermission', 
                'Remove-QQSMBSharePermission', 'Get-QQSMBSettings', 
-               'Modify-QQSMBSettings', 'List-QQSnapshots', 'List-QQSnapshotStatuses', 
+               'Modify-QQSMBSettings', 'List-QQSMBFileHandles','Close-QQSMBFileHandles',
+               'List-QQSnapshots', 'List-QQSnapshotStatuses', 
                'Get-QQSnapshot', 'Get-QQSnapshotStatus', 'Delete-QQSnapshot', 
                'Create-QQSnapshot', 'Modify-QQSnapshot', 
                'Get-QQSnapshotsCapacityUsage', 'Get-QQSnapshotCapacityUsage', 
                'Get-QQSnapshotsAllCapacityUsage', 'Get-QQTime', 'Get-QQTimeStatus', 
                'Set-QQTime', 'List-QQTimeZones', 'Get-QQFileAttr', 'Create-QQNewDir','Set-QQFileAttr',
+               'Get-QQFileSamples',
                'Get-QQFTPStatus', 'Get-QQFTPSettings','Modify-QQFTPSettings ','Get-FSPermissisonSettings',
                'Get-QQFSAtimeSettings','Set-QQFSAtimeSettings','Get-QQFileAcl', 
                'List-QQSourceRelationships','List-QQSourceRelationshipStatuses','Get-QQSourceRelationship','Get-QQSourceRelationshipStatus','List-QQSourceRelationshipSnapshots',
-               'List-QQTargetRelationshipStatuses','Get-QQTargetRelationshipStatus'
+               'List-QQTargetRelationshipStatuses','Get-QQTargetRelationshipStatus',
+               'List-QQLocalUsers','Get-QQLocalUser', 'Get-QQLocalUserGroups',
+               'Add-QQLocalUser','Delete-QQLocalUser', 'Set-QQUserPassword',
+               'List-QQLocalGroups','Get-QQLocalGroup', 'Get-QQGroupMembers',
+               'Add-QQLocalGroup','Delete-QQLocalGroup','Modify-QQLocalGroup',
+               'List-QQTreeDeletes','Get-QQTreeDelete','Create-QQTreeDelete','Cancel-QQTreeDelete',
+               'Get-QQTimeSeries','Get-QQCurrentActivity','Get-QQCapacityHistory','Get-QQFilesCapacityHistory'
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
 CmdletsToExport = '*'

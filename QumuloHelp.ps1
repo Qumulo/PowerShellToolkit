@@ -48,6 +48,14 @@ function Get-QQHelp {
         Cancel-QQADOperation - Cancel current join or leave operation.
         Set-QQADSettings - Modify advanced Active Directory settings
         Reconfigure-QQADDomain - Reconfigure Active Directory POSIX Attributes
+        Get-QQADDNToAccount - Get all account info for a distinguished name
+        Get-QQADUserSIDs - Get all account info for a distinguished name
+        Get-QQADUIDtoSIDs - Get SIDs from UID
+        Get-QQADSIDtoUID - Get UID from SID
+        Get-QQADSIDtoUsername - Get AD username from SID
+        Get-QQADSIDtoGID - Get GID from SID
+        Get-QQADGIDtoSIDs - Get SIDs from GID
+        Get-QQADSIDtoExpandedGroupSIDs  -  Get SID to Expanded Group SIDs
 
     Audit Logs
         Get-QQSyslogConfig - Get audit syslog server configuration
@@ -60,6 +68,7 @@ function Get-QQHelp {
     Cluster
         Get-QQClusterSettings - Get the cluster config
         List-QQNodes -  List nodes or a node details
+        List-QQUnconfiguredNodes - List unconfigured nodes
         Get-QQEncryptionStatus - View the status of encryption at rest
         Get-QQNodeState - Get the operational state of the node
         List-QQClusterSlots - List slots or retrieve info about the disk slot, such as its capacity, type, model, etc.
@@ -67,6 +76,19 @@ function Get-QQHelp {
         Get-QQProtectionStatus - Get detailed status information for the data protection of the cluster.
         Get-QQRestriperStatus - Get current status of restriper, including data protection status and current restripe phase (if running).
         Get-QQVersion - Retrieve the version of the appliance.
+        Get-QQSSLCaCertificate - Get SSL CA certificate.
+
+    Tree Delete
+        Create-QQTreeDelete - Delete Directory Tree
+        List-QQTreeDeletes - Tree Delete Job Statuses
+        Get-QQTreeDelete - Status of Directory Tree Deletion
+        Cancel-QQTreeDelete - Cancel a Tree Delete Job
+
+    Analytics
+        Get-QQTimeSeries - Get Time Series Statistics
+        Get-QQCurrentActivity - Get the current sampled IOP and throughput rates
+        Get-QQCapacityHistory - Get Capacity Usage History for a Time Window
+        Get-QQFilesCapacityHistory - Get historical largest file data.
 
     FTP 
         Get-QQFTPStatus - Get FTP server status
@@ -77,6 +99,8 @@ function Get-QQHelp {
         Get-QQFileAttr - Retrieve file attributes
         Get-QQFileAcl  - Retrieve file ACL
         Create-QQNewDir - Create a new directory 
+        Set-QQFileAttr - Set file attributes
+        Get-QQFileSamples - Get a number of sample files from the file system
 
     File System
         Get-QQFileSystemStatistics - Retrieve general file system statistics.
@@ -121,6 +145,22 @@ function Get-QQHelp {
         List-QQCurrentUser - Get information on the current user
         List-QQCurrentRoles - List all of the roles.
         List-QQAllPrivileges - Get information about all privileges.
+    
+    Users
+        List-QQLocalUsers - List all local users.
+        Get-QQLocalUser - Get a local user's details.
+        Get-QQLocalUserGroups - Get a local user's group details.
+        Add-QQLocalUser - Add a new user
+        Delete-QQLocalUser - Delete a new user
+        Set-QQUserPassword - Set a user's password
+
+    Groups
+        List-QQLocalGroups - List all local groups.
+        Get-QQLocalGroup - Get a local  group's details.
+        Get-QQGroupMembers - Get group members
+        Add-QQLocalGroup - Add a new group
+        Delete-QQLocalGroup - Delete a new group
+        Modify-QQLocalGroup - Modify a group
 
     Replication Relationship (SHIFT)
         List-QQSourceRelationships - List existing source replication relationships.
@@ -150,6 +190,8 @@ function Get-QQHelp {
         Remove-QQSMBSharePermission - Remove matched SMB share permissions
         Get-QQSMBSettings - Get SMB settings
         Modify-QQSMBSettings - Set SMB server settings
+        List-QQSMBFileHandles - List SMB open file handles
+        Close-QQSMBFileHandles - Force close a specified SMB file handle
 
     Snapshots
         List-QQSnapshots - List all snapshots

@@ -1151,3 +1151,198 @@ function Modify-QQSMBSettings {
 		$_.Exception.Response
 	}
 }
+function List-QQSMBFileHandles {
+<#
+	.SYNOPSIS
+		List SMB open file handles.
+	.DESCRIPTION
+		List SMB open file handles
+	.PARAMETER Path [PATH]
+		Path to file.
+	.PARAMETER PageSize [PAGE_SIZE]
+		Max files to return per request
+	.PARAMETER ResolvePaths
+		Returns the primary path of the opened file
+	
+	.EXAMPLE
+		List-QQSMBFileHandles -Path PATH -PageSize 10 -ResolvePaths [-Json]
+	.LINK
+		https://care.qumulo.com/hc/en-us/articles/360044728593-Close-an-Open-SMB-File-via-QQ-CLI
+	#>
+	# CmdletBinding parameters
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $True)][string]$Path,
+		[Parameter(Mandatory = $False)][string]$PageSize,
+		[Parameter(Mandatory = $False)] [bool]$ResolvePaths=$False,
+		[Parameter(Mandatory = $False)] [switch]$Json
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
+
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
+		}
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+				Login-QQCluster
+			}
+		}
+
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
+
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
+
+		if ($path) {
+			$htmlPath = ([uri]::EscapeDataString($path))
+			# API url definition
+			$url = "/v1/files/$htmlPath/info/attributes"
+
+			# API call run
+			try {
+				$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+				$id = $($response.id)
+			}
+			catch {
+				$_.Exception.Response
+			}
+		}
+
+		# API url definition
+		$url = "/v1/smb/files/?file_number=$id"
+
+		if($ResolvePaths){
+			$url += "&resolve_paths=True"
+		}
+		else {
+			$url += "&resolve_path=False"
+		}
+
+		if($PageSize) {
+			$url += "&limit=$PageSize"
+		}
+
+		# API call run	
+		try {
+
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+
+			# Response
+			if ($Json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $response
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
+}
+
+function Close-QQSMBFileHandles {
+	<#
+		.SYNOPSIS
+			Force close a specified SMB file handle
+		.DESCRIPTION
+			Force close a specified SMB file handle
+
+			NOTE: This will prevent the client from sending any new requests for
+			this file handle, releasing all locks and forcing the client to reopen
+			the file. The client will not be given the opportunity to flush cached
+			writes. Proceed with caution!
+		.PARAMETER Location [LOCATION]
+			The location of the file handle to close as returned from List-QQSMBFileHandles
+		.EXAMPLE
+			Close-QQSMBFileHandles -Location [LOCATION]
+		.LINK
+			https://care.qumulo.com/hc/en-us/articles/360044728593-Close-an-Open-SMB-File-via-QQ-CLI
+		#>
+	
+		# CmdletBinding parameters
+		[CmdletBinding()]
+		param(
+			[Parameter(Mandatory = $True)][ValidateNotNullOrEmpty()] [string]$Location,
+			[Parameter(Mandatory = $False)] [switch]$Json
+		)
+		if ($SkipCertificateCheck -eq 'true') {
+			$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+		}
+	
+		# Existing BearerToken check
+		try {
+			if (!$global:Credentials) {
+				Login-QQCluster
+			}
+			else {
+				if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+					Login-QQCluster
+				}
+			}
+	
+			$bearerToken = $global:Credentials.BearerToken
+			$clusterName = $global:Credentials.ClusterName
+			$portNumber = $global:Credentials.PortNumber
+	
+			$TokenHeader = @{
+				Authorization = "Bearer $bearerToken"
+			}
+	
+			# API Request body
+			$body = @()
+			$body += ( 
+					@{
+					'file_number'=0
+					'handle_info'= @{
+						'owner'='0'
+						'access_mask'=@('MS_ACCESS_FILE_READ_ATTRIBUTES') 
+						'version'= 0
+						'location'=$Location
+						'num_byte_range_locks'=0
+					}
+				}
+			)
+
+			$bodyJson = $body | ConvertTo-Json -Depth 10
+
+			Write-Debug($body| ConvertTo-Json -Depth 10)
+
+			# API url definition
+			$url = "/v1/smb/files/close"
+
+			# API call run
+			try {
+				$response = Invoke-RestMethod -SkipCertificateCheck -Method 'POST' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ("["+$bodyJson+"]") -TimeoutSec 60 -ErrorAction:Stop
+
+				# Response
+				if ($Json) {
+					return @($response) | ConvertTo-Json -Depth 10
+				}
+				else {
+					return $response
+				}
+			}
+			catch {
+				$_.Exception.Response
+			}
+
+		else {
+			return ("Missing parameter!")
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
+}
+	
