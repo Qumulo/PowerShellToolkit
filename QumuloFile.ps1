@@ -185,6 +185,7 @@ function Get-QQFileAcl {
 }
 
 
+
 function Create-QQNewDir {
     <#
         .SYNOPSIS
@@ -347,5 +348,164 @@ function Set-QQFileAttr {
     }
 }
         
-        
+function Get-QQFileSamples {
+<#
+    .SYNOPSIS
+        Get a number of sample files from the file system
+    .DESCRIPTION
+        Get a number of sample files from the file system
+    .PARAMETER Id [Directory ID]
+        Directory ID
+    .PARAMETER Path [Directory Path]
+        Directory path
+    .PARAMETER Count [COUNT]
+        Number of sample
+    .PARAMETER SampleBy [capacity,data,file,named_streams]
+        Weight the sampling by the value specified: capacity (total bytes used for data and metadata), data (total bytes used for data only), file (file count), named_streams (named stream count)
+    .EXAMPLE
+        Get-QQFileSamples -Id [File ID] 
+        Get-QQFileSamples -Path [Directory Path] 
+    #>
+
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $True,ParameterSetName = "Id")][ValidateNotNullOrEmpty()] [string]$Id,
+        [Parameter(Mandatory = $True,ParameterSetName = "Path")][ValidateNotNullOrEmpty()] [string]$Path,
+        [Parameter(Mandatory = $True)][string]$Count,
+        [Parameter(Mandatory = $True)][string]$SampleBy,
+        [Parameter(Mandatory = $False)] [switch]$Json
+    )
+    if ($SkipCertificateCheck -eq 'true') {
+        $PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+    }
+
+    try {
+        # Existing BearerToken check
+        if (!$global:Credentials) {
+            Login-QQCluster
+        }
+        else {
+            if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+                Login-QQCluster
+            }
+        }
+
+        $bearerToken = $global:Credentials.BearerToken
+        $clusterName = $global:Credentials.ClusterName
+        $portNumber = $global:Credentials.PortNumber
+
+        $TokenHeader = @{
+            Authorization = "Bearer $bearerToken"
+        }
+
+        if ($path) {
+            $htmlPath = ([uri]::EscapeDataString($path))
+            # API url definition
+            $url = "/v1/files/$htmlPath/sample/?by-value=$SampleBy&limit=$Count" 
+        }
+        elseif($id){
+            $url = "/v1/files/$id/sample/?by-value=$SampleBy&limit=$Count"
+        }
+
+            # API call run
+            try {
+                $response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+
+            # Response
+            if ($Json) {
+                return @($response) | ConvertTo-Json -Depth 10
+            }
+            else {
+                return $response
+            }
+        }
+        catch {
+            $_.Exception.Response
+        }
+    }
+    catch {
+        $_.Exception.Response
+    }
+}
     
+    
+function Read-QQDirAggregates {
+<#
+    .SYNOPSIS
+        Read directory aggregation entries
+    .DESCRIPTION
+        Read directory aggregation entries
+    .PARAMETER Id [Directory ID]
+        Directory ID
+    .PARAMETER Path [Directory Path]
+        Directory path
+    .PARAMETER Count [COUNT]
+        Number of sample
+    .PARAMETER SampleBy [capacity,data,file,named_streams]
+        Weight the sampling by the value specified: capacity (total bytes used for data and metadata), data (total bytes used for data only), file (file count), named_streams (named stream count)
+    .EXAMPLE
+        Get-QQFileSamples -Id [File ID] 
+        Get-QQFileSamples -Path [Directory Path] 
+    #>
+
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $True,ParameterSetName = "Id")][ValidateNotNullOrEmpty()] [string]$Id,
+        [Parameter(Mandatory = $True,ParameterSetName = "Path")][ValidateNotNullOrEmpty()] [string]$Path,
+        [Parameter(Mandatory = $True)][string]$Count,
+        [Parameter(Mandatory = $True)][string]$SampleBy,
+        [Parameter(Mandatory = $False)] [switch]$Json
+    )
+    if ($SkipCertificateCheck -eq 'true') {
+        $PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+    }
+
+    try {
+        # Existing BearerToken check
+        if (!$global:Credentials) {
+            Login-QQCluster
+        }
+        else {
+            if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+                Login-QQCluster
+            }
+        }
+
+        $bearerToken = $global:Credentials.BearerToken
+        $clusterName = $global:Credentials.ClusterName
+        $portNumber = $global:Credentials.PortNumber
+
+        $TokenHeader = @{
+            Authorization = "Bearer $bearerToken"
+        }
+
+        if ($path) {
+            $htmlPath = ([uri]::EscapeDataString($path))
+            # API url definition
+            $url = "/v1/files/$htmlPath/sample/?by-value=$SampleBy&limit=$Count" 
+        }
+        elseif($id){
+            $url = "/v1/files/$id/sample/?by-value=$SampleBy&limit=$Count"
+        }
+
+            # API call run
+            try {
+                $response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+
+            # Response
+            if ($Json) {
+                return @($response) | ConvertTo-Json -Depth 10
+            }
+            else {
+                return $response
+            }
+        }
+        catch {
+            $_.Exception.Response
+        }
+    }
+    catch {
+        $_.Exception.Response
+    }
+}
+        

@@ -1346,3 +1346,242 @@ function Close-QQSMBFileHandles {
 	}
 }
 	
+function List-QQSMBSessions {
+<#
+	.SYNOPSIS
+		List SMB open sessions
+	.DESCRIPTION
+		List SMB open sessions
+	.PARAMETER Identity [IDENTITY]
+		List only sessions matching this user's identity in the form of: [1] A name or a SID optionally qualified with a domain prefix (e.g "local:name", "S-1-1-0", "name", "world:Everyone",
+        "ldap_user:name", or "ad:name"), or [2] An ID type (e.g. "uid:1001", "auth_id:513", "SID:S-1-1-0").
+	.PARAMETER PageSize [PAGE_SIZE]
+		Max sessions to return per request
+	
+	.EXAMPLE
+		List-QQSMBSessions -Identity ab:qumulouser -PageSize 10 [-Json]
+	.LINK
+		https://care.qumulo.com/hc/en-us/articles/360046854394-Close-an-Open-SMB-Session
+	#>
+	# CmdletBinding parameters
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $False)][string]$Identity,
+		[Parameter(Mandatory = $False)][string]$PageSize,
+		[Parameter(Mandatory = $False)] [switch]$Json
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
+
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
+		}
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+				Login-QQCluster
+			}
+		}
+
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
+
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
+
+		# API url definition
+		$url = "/v1/smb/sessions/"
+
+
+		if(($PageSize) -And ($Identity)){
+			$htmlIdentity = ([uri]::EscapeDataString($Identity))
+			$url += "?limit=$PageSize&?identity=$htmlIdentity"
+		}
+		else{
+			if($PageSize) {
+				$url += "?limit=$PageSize"
+			}
+
+			if($Identity){
+				$htmlIdentity = ([uri]::EscapeDataString($Identity))
+				$url += "?identity=$htmlIdentity"
+			}
+		}
+		
+
+		# API call run	
+		try {
+
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+
+			# Response
+			if ($Json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $response
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
+}
+
+function Close-QQSMBSessions {
+	<#
+		.SYNOPSIS
+			Force close SMB sessions matching one or more of a set of filters.
+
+		.DESCRIPTION
+			Force close SMB sessions matching one or more of a set of filters.
+
+			NOTE: This will prevent the client from sending any new requests for
+			this session, releasing all locks and forcing the client to
+			reauthenticate. The client will not be given the opportunity to flush
+			cached writes. Proceed with caution!
+		.PARAMETER Location [LOCATION]
+			The location of the file handle to close as returned from List-QQSMBSessions
+		.PARAMETER Identity [IDENTITY]  
+			Close only sessions matching this user's identity in the form of: [1] A name or a SID optionally qualified with a domain prefix (e.g "local:name", "S-1-1-0", "name", 
+			"world:Everyone", "ldap_user:name", or "ad:name"), or [2] An ID type (e.g. "uid:1001","auth_id:513", "SID:S-1-1-0").
+		.PARAMETER Ip [IP]              
+			Close only sessions originating from this ip.
+		.EXAMPLE
+			Close-QQSMBSessions -Location [LOCATION]
+		.LINK
+			https://care.qumulo.com/hc/en-us/articles/360046854394-Close-an-Open-SMB-Session
+		#>
+	
+		# CmdletBinding parameters
+		[CmdletBinding()]
+		param(
+			[Parameter(Mandatory = $False)][string]$Location,
+			[Parameter(Mandatory = $False)][string]$Identity,
+			[Parameter(Mandatory = $False)][string]$Ip,
+			[Parameter(Mandatory = $False)] [switch]$Json
+		)
+		if ($SkipCertificateCheck -eq 'true') {
+			$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+		}
+	
+		# Existing BearerToken check
+		try {
+			if (!$global:Credentials) {
+				Login-QQCluster
+			}
+			else {
+				if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+					Login-QQCluster
+				}
+			}
+	
+			$bearerToken = $global:Credentials.BearerToken
+			$clusterName = $global:Credentials.ClusterName
+			$portNumber = $global:Credentials.PortNumber
+	
+			$TokenHeader = @{
+				Authorization = "Bearer $bearerToken"
+			}
+
+
+			$url = "/v1/smb/sessions/"
+			if($Identity){
+				$htmlIdentity = ([uri]::EscapeDataString($Identity))
+				$url += "?identity=$htmlIdentity"
+			}
+			try {
+				$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+				$sessions = $response.session_infos
+			}
+			catch {
+				$_.Exception.Response
+			}
+	
+			# API Request body
+			 
+			$matchedSessions1 = @()
+			$matchedSessions2 = @()
+			$matchedSessions3 = @()
+
+			foreach ($session in $sessions){
+				if($Ip){
+					if ($session.originator -eq $Ip) {
+						$matchedSessions1 += $session
+					}
+				}
+				else{
+					$matchedSessions1 += $session
+				}    
+			}
+
+			foreach ($matchedSession1 in $matchedSessions1){
+				if($Location){
+					if ($matchedSession1.location -eq $Location) {
+						$matchedSessions2 += $matchedSession1
+					}
+				}
+				else{
+					$matchedSessions2 += $matchedSession1    
+				}
+			}
+			# Write-Debug("Matched Sessions2:")
+			# Write-Debug($matchedSessions2 | ConvertTo-Json -Depth 10)
+
+			foreach ($matchedSession2 in $matchedSessions2){
+				if($Identity){
+					$userCheck = $matchedSession2.user
+					if ($userCheck.ContainsValue($Identity)){
+						$matchedSessions3 += $matchedSession2
+						Write-Debug($Identity)
+					}
+				}
+				else{
+					# $userCheck = $matchedSession2.user
+					# Write-Debug($userCheck | ConvertTo-Json -Depth 10)
+					$matchedSessions3 += $matchedSession2 
+				}
+			} 
+			# Write-Debug("Matched Sessions3:")
+			# Write-Debug($matchedSessions3 | ConvertTo-Json -Depth 10)
+
+			
+			$body = $matchedSessions3
+			
+			$bodyJson = $body | ConvertTo-Json -Depth 10
+			Write-Debug($body | ConvertTo-Json -Depth 10)
+
+			# API url definition
+			$url = "/v1/smb/sessions/close"
+
+			# API call run
+			try {
+				$response = Invoke-RestMethod -SkipCertificateCheck -Method 'POST' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ("["+$bodyJson+"]") -TimeoutSec 60 -ErrorAction:Stop
+
+				# Response
+				if ($Json) {
+					return @($response) | ConvertTo-Json -Depth 10
+				}
+				else {
+					return $response
+				}
+			}
+			catch {
+				$_.Exception.Response
+			}
+
+		else {
+			return ("Missing parameter!")
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
+}

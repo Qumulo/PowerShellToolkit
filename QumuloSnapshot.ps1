@@ -418,8 +418,8 @@ function Create-QQSnapshot {
 	# CmdletBinding parameters.
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $True,ParameterSetName = "Id")][string]$SourceFileId,
-		[Parameter(Mandatory = $True,ParameterSetName = "Path")][string]$Path,
+		[Parameter(Mandatory = $True,ParameterSetName = "Id")][ValidateNotNullOrEmpty()] [string]$SourceFileId,
+		[Parameter(Mandatory = $True,ParameterSetName = "Path")][ValidateNotNullOrEmpty()] [string]$Path,
 		[Parameter(Mandatory = $False)][string]$Name,
 		[Parameter(Mandatory = $False)][string]$Expiration,
 		[Parameter(Mandatory = $False)] [switch]$Json
@@ -453,11 +453,10 @@ function Create-QQSnapshot {
 			
 			# API url definition
 			$url = "/v1/files/$htmlPath/info/attributes"
-
 			# API call run
 			try {
 				$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
-				$id = $($response.id)
+				$SourceFileId = $($response.id)
 			}
 			catch {
 				$_.Exception.Response
@@ -466,7 +465,7 @@ function Create-QQSnapshot {
 
 		# API Request body
 		$body = @{
-			"name" = $Name
+			"name_suffix" = $Name
 			"expiration" = $Expiration
 			"source_file_id" = $SourceFileId
 		}

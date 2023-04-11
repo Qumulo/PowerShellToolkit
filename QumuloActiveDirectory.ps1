@@ -712,3 +712,520 @@ function Reconfigure-QQADDomain {
         $_.Exception.Response
     }
 }
+
+
+function Get-QQADDNToAccount {
+<#
+    .SYNOPSIS
+        Get all account info for a distinguished name
+    .DESCRIPTION
+        Get all account info for a distinguished name
+    .PARAMETER DistinguishedName [DISTINGUISHED_NAME]
+        Get the account with this DN (e.g. CN=user,DC=example,DC=com)
+    .EXAMPLE
+        Get-QQADDNToAccount -DistinguishedName [DISTINGUISHED_NAME] [-Json]
+    #>
+
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $True)][string]$DistinguishedName,
+        [Parameter(Mandatory = $False)][switch]$Json
+    )
+    if ($SkipCertificateCheck -eq 'true') {
+        $PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+    }
+
+    try {
+        # Existing BearerToken check
+        if (!$global:Credentials) {
+            Login-QQCluster
+        }
+        else {
+            if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+                Login-QQCluster
+            }
+        }
+
+        $bearerToken = $global:Credentials.BearerToken
+        $clusterName = $global:Credentials.ClusterName
+        $portNumber = $global:Credentials.PortNumber
+
+        $TokenHeader = @{
+            Authorization = "Bearer $bearerToken"
+        }
+
+        # API url definition
+        $dn = ([uri]::EscapeDataString($DistinguishedName))
+        $url = "/v1/ad/distinguished-names/$dn/object"
+
+        # API call ru
+        try {
+            $response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+
+            # Response
+            if ($Json) {
+                return @($response) | ConvertTo-Json -Depth 10
+            }
+            else {
+                return $response
+            }
+        }
+        catch {
+            $_.Exception.Response
+        }
+    }
+    catch {
+        $_.Exception.Response
+    }
+}
+
+
+function Get-QQADUserSIDs {
+<#
+    .SYNOPSIS
+        Get all account info for a distinguished name
+    .DESCRIPTION
+        Get all account info for a distinguished name
+    .PARAMETER Username [USERNAME]
+        Get the SIDs that correspond to this username
+    .EXAMPLE
+        Get-QQADUserSIDs -Username [USERNAME] [-Json]
+    #>
+
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $True)][string]$Username,
+        [Parameter(Mandatory = $False)][switch]$Json
+    )
+    if ($SkipCertificateCheck -eq 'true') {
+        $PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+    }
+
+    try {
+        # Existing BearerToken check
+        if (!$global:Credentials) {
+            Login-QQCluster
+        }
+        else {
+            if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+                Login-QQCluster
+            }
+        }
+
+        $bearerToken = $global:Credentials.BearerToken
+        $clusterName = $global:Credentials.ClusterName
+        $portNumber = $global:Credentials.PortNumber
+
+        $TokenHeader = @{
+            Authorization = "Bearer $bearerToken"
+        }
+
+        # API url definition
+        $url = "/v1/ad/usernames/$Username/sids/"
+
+        # API call ru
+        try {
+            $response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+
+            # Response
+            if ($Json) {
+                return @($response) | ConvertTo-Json -Depth 10
+            }
+            else {
+                return $response
+            }
+        }
+        catch {
+            $_.Exception.Response
+        }
+    }
+    catch {
+        $_.Exception.Response
+    }
+}
+
+function Get-QQADUIDtoSIDs {
+<#
+    .SYNOPSIS
+        Get SIDs from UID
+    .DESCRIPTION
+        Get SIDs from UID
+    .PARAMETER Uid [UID]
+        Get the SIDs that correspond to this UID
+    .EXAMPLE
+        Get-QQADUIDtoSIDs -UID [UID] [-Json]
+    #>
+
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $True)][string]$Uid,
+        [Parameter(Mandatory = $False)][switch]$Json
+    )
+    if ($SkipCertificateCheck -eq 'true') {
+        $PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+    }
+
+    try {
+        # Existing BearerToken check
+        if (!$global:Credentials) {
+            Login-QQCluster
+        }
+        else {
+            if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+                Login-QQCluster
+            }
+        }
+
+        $bearerToken = $global:Credentials.BearerToken
+        $clusterName = $global:Credentials.ClusterName
+        $portNumber = $global:Credentials.PortNumber
+
+        $TokenHeader = @{
+            Authorization = "Bearer $bearerToken"
+        }
+
+        # API url definition
+        $url = "/v1/ad/uids/$Uid/sids/"
+
+        # API call ru
+        try {
+            $response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+
+            # Response
+            if ($Json) {
+                return @($response) | ConvertTo-Json -Depth 10
+            }
+            else {
+                return $response
+            }
+        }
+        catch {
+            $_.Exception.Response
+        }
+    }
+    catch {
+        $_.Exception.Response
+    }
+}
+
+
+function Get-QQADSIDtoUID {
+<#
+    .SYNOPSIS
+        Get UID from SID
+    .DESCRIPTION
+        Get UID from SID
+    .PARAMETER Sid [SID]
+        Get the UID that corresponds to this SID
+    .EXAMPLE
+        Get-QQADSIDtoUID -Sid [SID] [-Json]
+    #>
+
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $True)][string]$Sid,
+        [Parameter(Mandatory = $False)][switch]$Json
+    )
+    if ($SkipCertificateCheck -eq 'true') {
+        $PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+    }
+
+    try {
+        # Existing BearerToken check
+        if (!$global:Credentials) {
+            Login-QQCluster
+        }
+        else {
+            if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+                Login-QQCluster
+            }
+        }
+
+        $bearerToken = $global:Credentials.BearerToken
+        $clusterName = $global:Credentials.ClusterName
+        $portNumber = $global:Credentials.PortNumber
+
+        $TokenHeader = @{
+            Authorization = "Bearer $bearerToken"
+        }
+
+        # API url definition
+        $url = "/v1/ad/sids/$Sid/uid"
+
+        # API call ru
+        try {
+            $response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+
+            # Response
+            if ($Json) {
+                return @($response) | ConvertTo-Json -Depth 10
+            }
+            else {
+                return $response
+            }
+        }
+        catch {
+            $_.Exception.Response
+        }
+    }
+    catch {
+        $_.Exception.Response
+    }
+}
+
+function Get-QQADSIDtoUsername {
+<#
+    .SYNOPSIS
+        Get AD username from SID
+    .DESCRIPTION
+        Get AD username from SID
+    .PARAMETER Sid [SID]
+        Get the username that corresponds to this SID
+    .EXAMPLE
+        Get-QQADSIDtoUsername -Sid [SID] [-Json]
+    #>
+
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $True)][string]$Sid,
+        [Parameter(Mandatory = $False)][switch]$Json
+    )
+    if ($SkipCertificateCheck -eq 'true') {
+        $PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+    }
+
+    try {
+        # Existing BearerToken check
+        if (!$global:Credentials) {
+            Login-QQCluster
+        }
+        else {
+            if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+                Login-QQCluster
+            }
+        }
+
+        $bearerToken = $global:Credentials.BearerToken
+        $clusterName = $global:Credentials.ClusterName
+        $portNumber = $global:Credentials.PortNumber
+
+        $TokenHeader = @{
+            Authorization = "Bearer $bearerToken"
+        }
+
+        # API url definition
+        $url = "/v1/ad/sids/$Sid/username"
+
+        # API call ru
+        try {
+            $response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+
+            # Response
+            if ($Json) {
+                return @($response) | ConvertTo-Json -Depth 10
+            }
+            else {
+                return $response
+            }
+        }
+        catch {
+            $_.Exception.Response
+        }
+    }
+    catch {
+        $_.Exception.Response
+    }
+}
+
+function Get-QQADSIDtoGID {
+<#
+    .SYNOPSIS
+        Get GID from SID
+    .DESCRIPTION
+        Get GID from SID
+    .PARAMETER Sid [SID]
+        Get the GID that corresponds to this SID
+    .EXAMPLE
+        Get-QQADSIDtoGID -Sid [SID] [-Json]
+    #>
+
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $True)][string]$Sid,
+        [Parameter(Mandatory = $False)][switch]$Json
+    )
+    if ($SkipCertificateCheck -eq 'true') {
+        $PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+    }
+
+    try {
+        # Existing BearerToken check
+        if (!$global:Credentials) {
+            Login-QQCluster
+        }
+        else {
+            if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+                Login-QQCluster
+            }
+        }
+
+        $bearerToken = $global:Credentials.BearerToken
+        $clusterName = $global:Credentials.ClusterName
+        $portNumber = $global:Credentials.PortNumber
+
+        $TokenHeader = @{
+            Authorization = "Bearer $bearerToken"
+        }
+
+        # API url definition
+        $url = "/v1/ad/sids/$Sid/gid"
+
+        # API call ru
+        try {
+            $response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+
+            # Response
+            if ($Json) {
+                return @($response) | ConvertTo-Json -Depth 10
+            }
+            else {
+                return $response
+            }
+        }
+        catch {
+            $_.Exception.Response
+        }
+    }
+    catch {
+        $_.Exception.Response
+    }
+}
+
+function Get-QQADGIDtoSIDs {
+    <#
+        .SYNOPSIS
+            Get SIDs from GID
+        .DESCRIPTION
+            Get SIDs from GID
+        .PARAMETER Uid [UID]
+            Get the SIDs that correspond to this GID
+        .EXAMPLE
+            Get-QQADUIDtoSIDs -GID [GID] [-Json]
+        #>
+    
+        [CmdletBinding()]
+        param(
+            [Parameter(Mandatory = $True)][string]$Gid,
+            [Parameter(Mandatory = $False)][switch]$Json
+        )
+        if ($SkipCertificateCheck -eq 'true') {
+            $PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+        }
+    
+        try {
+            # Existing BearerToken check
+            if (!$global:Credentials) {
+                Login-QQCluster
+            }
+            else {
+                if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+                    Login-QQCluster
+                }
+            }
+    
+            $bearerToken = $global:Credentials.BearerToken
+            $clusterName = $global:Credentials.ClusterName
+            $portNumber = $global:Credentials.PortNumber
+    
+            $TokenHeader = @{
+                Authorization = "Bearer $bearerToken"
+            }
+    
+            # API url definition
+            $url = "/v1/ad/gids/$Gid/sids/"
+    
+            # API call ru
+            try {
+                $response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+    
+                # Response
+                if ($Json) {
+                    return @($response) | ConvertTo-Json -Depth 10
+                }
+                else {
+                    return $response
+                }
+            }
+            catch {
+                $_.Exception.Response
+            }
+        }
+        catch {
+            $_.Exception.Response
+        }
+    }
+
+
+    function Get-QQADSIDtoExpandedGroupSIDs {
+    <#
+        .SYNOPSIS
+            Get SID to Expanded Group SIDs
+        .DESCRIPTION
+            Get SID to Expanded Group SIDs
+        .PARAMETER Sid [SID]
+            Get the GID that corresponds to this SID
+        .EXAMPLE
+            Get-QQADSIDtoExpandedGroupSID -Sid [SID] [-Json]
+        #>
+    
+        [CmdletBinding()]
+        param(
+            [Parameter(Mandatory = $True)][string]$Sid,
+            [Parameter(Mandatory = $False)][switch]$Json
+        )
+        if ($SkipCertificateCheck -eq 'true') {
+            $PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+        }
+    
+        try {
+            # Existing BearerToken check
+            if (!$global:Credentials) {
+                Login-QQCluster
+            }
+            else {
+                if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+                    Login-QQCluster
+                }
+            }
+    
+            $bearerToken = $global:Credentials.BearerToken
+            $clusterName = $global:Credentials.ClusterName
+            $portNumber = $global:Credentials.PortNumber
+    
+            $TokenHeader = @{
+                Authorization = "Bearer $bearerToken"
+            }
+    
+            # API url definition
+            $url = "/v1/ad/sids/$Sid/expanded-groups/"
+    
+            # API call ru
+            try {
+                $response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+    
+                # Response
+                if ($Json) {
+                    return @($response) | ConvertTo-Json -Depth 10
+                }
+                else {
+                    return $response
+                }
+            }
+            catch {
+                $_.Exception.Response
+            }
+        }
+        catch {
+            $_.Exception.Response
+        }
+    }

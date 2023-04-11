@@ -161,6 +161,69 @@ function List-QQNodes {
 	}
 }
 
+function List-QQUnconfiguredNodes {
+	<#
+		.SYNOPSIS
+			List unconfigured nodes
+		.DESCRIPTION
+			List unconfigured nodes or a node details
+		.EXAMPLE
+			List-QQUnconfiguredNodes [-Json]
+		#>
+	
+		# CmdletBinding parameters
+		[CmdletBinding()]
+		param(
+			[Parameter(Mandatory = $False)] [switch]$Json
+		)
+		if ($SkipCertificateCheck -eq 'true') {
+			$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+		}
+	
+		try {
+			# Existing BearerToken check
+			if (!$global:Credentials) {
+				Login-QQCluster
+			}
+			else {
+				if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+					Login-QQCluster
+				}
+			}
+	
+			$bearerToken = $global:Credentials.BearerToken
+			$clusterName = $global:Credentials.ClusterName
+			$portNumber = $global:Credentials.PortNumber
+	
+			$TokenHeader = @{
+				Authorization = "Bearer $bearerToken"
+			}
+	
+			# API url definition
+			$url = "/v1/unconfigured/nodes/"
+
+	
+			# API call run
+			try {
+				$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+	
+				# Response
+				if ($Json) {
+					return @($response) | ConvertTo-Json -Depth 10
+				}
+				else {
+					return $response
+				}
+			}
+			catch {
+				$_.Exception.Response
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+
 function Get-QQEncryptionStatus {
 <#
 	.SYNOPSIS
@@ -303,7 +366,7 @@ function List-QQClusterSlots {
 	# CmdletBinding parameters
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $False)] [string]$Slot,
+		[Parameter(Mandatory = $False)] [string]$SlotId,
 		[Parameter(Mandatory = $False)] [switch]$Json
 	)
 	if ($SkipCertificateCheck -eq 'true') {
@@ -330,8 +393,8 @@ function List-QQClusterSlots {
 		}
 
 		# API url definition
-		if ($Slot) {
-			$url = "/v1/cluster/slots/$Slot"
+		if ($SlotId) {
+			$url = "/v1/cluster/slots/$SlotId"
 		}
 		else {
 			$url = "/v1/cluster/slots/"
@@ -554,63 +617,125 @@ function Get-QQRestriperStatus {
 }
 
 function Get-QQVersion {
-	<#
-		.SYNOPSIS
-			Retrieve the version of the appliance.
-		.DESCRIPTION
-			Retrieve the version of the appliance.
-		.EXAMPLE
-			Get-QQVersion [-Json]
-		#>
-	
-		# CmdletBinding parameters
-		[CmdletBinding()]
-		param(
-			[Parameter(Mandatory = $False)] [switch]$Json
-		)
-		if ($SkipCertificateCheck -eq 'true') {
-			$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+<#
+	.SYNOPSIS
+		Retrieve the version of the appliance.
+	.DESCRIPTION
+		Retrieve the version of the appliance.
+	.EXAMPLE
+		Get-QQVersion [-Json]
+	#>
+
+	# CmdletBinding parameters
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $False)] [switch]$Json
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
+
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
 		}
-	
-		try {
-			# Existing BearerToken check
-			if (!$global:Credentials) {
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
 				Login-QQCluster
 			}
+		}
+
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
+
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
+
+		# API url definition
+		$url = "/v1/version"
+
+		# API call run	
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+
+			# Response
+			if ($Json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
 			else {
-				if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
-					Login-QQCluster
-				}
-			}
-	
-			$bearerToken = $global:Credentials.BearerToken
-			$clusterName = $global:Credentials.ClusterName
-			$portNumber = $global:Credentials.PortNumber
-	
-			$TokenHeader = @{
-				Authorization = "Bearer $bearerToken"
-			}
-	
-			# API url definition
-			$url = "/v1/version"
-	
-			# API call run	
-			try {
-				$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
-	
-				# Response
-				if ($Json) {
-					return @($response) | ConvertTo-Json -Depth 10
-				}
-				else {
-					return $response
-				}
-			}
-			catch {
-				$_.Exception.Response
+				return $response
 			}
 		}
 		catch {
 			$_.Exception.Response
 		}
 	}
+	catch {
+		$_.Exception.Response
+	}
+}
+
+function Get-QQSSLCaCertificate {
+<#
+	.SYNOPSIS
+		Get SSL CA certificate.
+	.DESCRIPTION
+		Get SSL CA certificate. This certificate is used to authenticate connections to external LDAP servers.
+	.EXAMPLE
+		Get-QQSSLCaCertificate [-Json]
+	#>
+
+	# CmdletBinding parameters
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $False)] [switch]$Json
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
+
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
+		}
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+				Login-QQCluster
+			}
+		}
+
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
+
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
+
+		# API url definition
+		$url = "/v2/cluster/settings/ssl/ca-certificate"
+
+		# API call run	
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+
+			# Response
+			if ($Json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $response
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
+}
