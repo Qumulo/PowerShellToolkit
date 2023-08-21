@@ -1172,7 +1172,7 @@ function List-QQSMBFileHandles {
 	# CmdletBinding parameters
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $True)][string]$Path,
+		[Parameter(Mandatory = $False)][string]$Path,
 		[Parameter(Mandatory = $False)][string]$PageSize,
 		[Parameter(Mandatory = $False)] [bool]$ResolvePaths=$False,
 		[Parameter(Mandatory = $False)] [switch]$Json
