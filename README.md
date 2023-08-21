@@ -95,7 +95,7 @@ To post feedback, submit feature ideas, or report bugs, use the [Issues](https:/
 
 Copyright © 2022 [Qumulo, Inc.](https://qumulo.com)
 
-## License
+## License 
 
 [![License](https://img.shields.io/badge/license-MIT-green)](https://opensource.org/licenses/MIT)
 
