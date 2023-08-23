@@ -1,4 +1,4 @@
-﻿<#
+<#
 	===========================================================================
 	Created by:   	berat.ulualan@qumulo.com
 	Organization: 	Qumulo, Inc.
@@ -1173,6 +1173,7 @@ function List-QQSMBFileHandles {
 	[CmdletBinding()]
 	param(
 		[Parameter(Mandatory = $False)][string]$Path,
+		[Parameter(Mandatory = $False)][string]$FileNumber,
 		[Parameter(Mandatory = $False)][string]$PageSize,
 		[Parameter(Mandatory = $False)] [bool]$ResolvePaths=$False,
 		[Parameter(Mandatory = $False)] [switch]$Json
@@ -1216,13 +1217,22 @@ function List-QQSMBFileHandles {
 		}
 
 		# API url definition
-		$url = "/v1/smb/files/?file_number=$id"
-
-		if($ResolvePaths){
-			$url += "&resolve_paths=True"
+		if($Path){
+			$url = "/v1/smb/files/?file_number=$id&"
 		}
 		else {
-			$url += "&resolve_path=False"
+			if($FileNumber){
+				$url = "/v1/smb/files/?file_number=$FileNumber&"
+			}
+			else {
+				$url = "/v1/smb/files/?"
+			}
+		}	
+		if($ResolvePaths){
+			$url += "resolve_paths=True"
+		}
+		else {
+			$url += "resolve_path=False"
 		}
 
 		if($PageSize) {
