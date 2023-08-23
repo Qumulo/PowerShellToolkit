@@ -22,7 +22,7 @@ The toolkit has a bunch of Qumulo operations that will require mainly for Window
 
 ### PowerShell Gallery
 
-Run the following command in an elevated PowerShell session to install the rollup module for Qumulo cmdlets:
+Run the following command in an elevated PowerShell session to install the rollup module for Qumulo cmdlets: 
 
 ```powershell
 Install-Module -Name Qumulo
