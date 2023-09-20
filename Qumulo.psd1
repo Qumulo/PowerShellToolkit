@@ -64,7 +64,7 @@ ScriptsToProcess = 'QumuloHelp.ps1', 'QumuloSession.ps1', 'QumuloQuota.ps1',
                'QumuloFileSystem.ps1', 'QumuloRoles.ps1','QumuloFTP.ps1','QumuloFile.ps1',
                'QumuloNFS.ps1','QumuloReplication.ps1','QumuloAccessToken.ps1','QumuloAnalytics.ps1',
                'QumuloLocalUsers.ps1', 'QumuloLocalGroups.ps1', 'QumuloMultitenancy.ps1', 'QumuloRoles.ps1', 'QumuloShift.ps1',
-               'QumuloTime.ps1', 'QumuloTreeDelete.ps', 'QumuloUpgrades.ps1'
+               'QumuloTime.ps1', 'QumuloTreeDelete.ps1', 'QumuloUpgrades.ps1'
 
 # Type files (.ps1xml) to be loaded when importing this module
 # TypesToProcess = @()
