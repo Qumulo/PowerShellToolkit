@@ -12,7 +12,7 @@
 RootModule = 'Qumulo.psm1'
 
 # Version number of this module.
-ModuleVersion = '6.2.0.1'
+ModuleVersion = '6.2.1'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -27,7 +27,7 @@ Author = 'Berat Ulualan'
 CompanyName = 'Qumulo, Inc.'
 
 # Copyright statement for this module
-Copyright = '(c) 2022 Qumulo, Inc. All rights reserved.'
+Copyright = '(c) 2023 Qumulo, Inc. All rights reserved.'
 
 # Description of the functionality provided by this module
 Description = 'Qumulo Powershell Toolkit will help the Qumulo customers who uses Microsoft PowerShell for their daily operations.'
@@ -61,7 +61,10 @@ ScriptsToProcess = 'QumuloHelp.ps1', 'QumuloSession.ps1', 'QumuloQuota.ps1',
                'QumuloShift.ps1', 'QumuloSnapshot.ps1', 'QumuloCluster.ps1', 
                'QumuloSMB.ps1', 'QumuloNetwork.ps1', 'QumuloAudit.ps1', 
                'QumuloTime.ps1', 'QumuloActiveDirectory.ps1', 'QumuloMonitoring.ps1', 
-               'QumuloFileSystem.ps1', 'QumuloRoles.ps1','QumuloFTP.ps1','QumuloFile.ps1','QumuloReplication.ps1'
+               'QumuloFileSystem.ps1', 'QumuloRoles.ps1','QumuloFTP.ps1','QumuloFile.ps1',
+               'QumuloNFS.ps1','QumuloReplication.ps1','QumuloAccessToken.ps1','QumuloAnalytics.ps1','QumuloAPIList.ps1',
+               'QumuloLocalUsers.ps1', 'QumuloLocalGroups.ps1', 'QumuloMultitenancy.ps1', 'QumuloRoles.ps1', 'QumuloShift.ps1',
+               'QumuloTime.ps1', 'QumuloTreeDelete.ps', 'QumuloUpgrades.ps1'
 
 # Type files (.ps1xml) to be loaded when importing this module
 # TypesToProcess = @()
@@ -80,12 +83,12 @@ FunctionsToExport = 'Get-QQHelp', 'Get-QQADSettings', 'Get-QQADStatus', 'Get-QQA
                'Get-QQADSIDtoGID', 'Get-QQADGIDtoSIDs', 'Get-QQADSIDtoExpandedGroupSIDs',
                'Get-QQSyslogConfig', 'Get-QQSyslogStatus', 'Set-QQSyslogConfig', 'Get-QQCloudWatchConfig', 
                'Get-QQCloudWatchStatus', 'Set-QQCloudWatchConfig', 
-               'Get-QQClusterSettings', 'List-QQNodes', 'List-QQUnconfiguredNodes','Get-QQEncryptionStatus', 
-               'Get-QQNodeState', 'List-QQClusterSlots', 'Get-QQChassisStatus', 
+               'Get-QQClusterSettings', 'List-QQNodes', 'Get-QQNode', 'Get-QQUIDLightStatus', 'List-QQUnconfiguredNodes',
+               'Get-QQEncryptionStatus', 'Get-QQNodeState', 'List-QQClusterSlots', 'Get-QQChassisStatus', 
                'Get-QQProtectionStatus', 'Get-QQRestriperStatus', 'Get-QQVersion', 
-               'Get-QQSSLCaCertificate',
-               'Get-QQFSStatistics', 'Get-QQMonitoringConfig', 
-               'List-QQMonitoringStatus', 'Get-QQVPNKeys', 'List-QQNetworks', 
+               'Get-QQSSLCaCertificate', 'Get-QQWebUISettings','Modify-QQWebUISettings','Resolve-QQFilePath', 
+               'List-QQNamedStreams','Get-QQFSStatistics', 'Get-QQMonitoringConfig', 
+               'List-QQMonitoringStatus', 'Get-QQVPNKeys', 'Get-QQMetrics', 'List-QQNetworks', 
                'Get-QQNetwork', 'Add-QQNetwork', 'Delete-QQNetwork', 
                'Modify-QQNetwork', 'List-QQConnections', 'List-QQInterfaces', 
                'Get-QQInterface', 'Modify-QQInterface', 'List-QQNetworkPoll', 
@@ -107,17 +110,24 @@ FunctionsToExport = 'Get-QQHelp', 'Get-QQADSettings', 'Get-QQADStatus', 'Get-QQA
                'Get-QQSnapshotsCapacityUsage', 'Get-QQSnapshotCapacityUsage', 
                'Get-QQSnapshotsAllCapacityUsage', 'Get-QQTime', 'Get-QQTimeStatus', 
                'Set-QQTime', 'List-QQTimeZones', 'Get-QQFileAttr', 'Create-QQNewDir','Set-QQFileAttr',
-               'Get-QQFileSamples',
+               'Get-QQFileSamples','Read-QQDirAggregates', 'Read-QQDir',
                'Get-QQFTPStatus', 'Get-QQFTPSettings','Modify-QQFTPSettings ','Get-FSPermissisonSettings',
-               'Get-QQFSAtimeSettings','Set-QQFSAtimeSettings','Get-QQFileAcl', 
-               'List-QQSourceRelationships','List-QQSourceRelationshipStatuses','Get-QQSourceRelationship','Get-QQSourceRelationshipStatus','List-QQSourceRelationshipSnapshots',
+               'Get-QQFSAtimeSettings','Set-QQFSAtimeSettings','Get-QQFSNotifySettings', 'Set-QQFSNotifySettings',
+               'Get-QQFileAcl', 'List-QQSourceRelationships','List-QQSourceRelationshipStatuses','Get-QQSourceRelationship',
+               'Get-QQSourceRelationshipStatus','List-QQSourceRelationshipSnapshots',
                'List-QQTargetRelationshipStatuses','Get-QQTargetRelationshipStatus',
                'List-QQLocalUsers','Get-QQLocalUser', 'Get-QQLocalUserGroups',
                'Add-QQLocalUser','Delete-QQLocalUser', 'Set-QQUserPassword',
                'List-QQLocalGroups','Get-QQLocalGroup', 'Get-QQGroupMembers',
                'Add-QQLocalGroup','Delete-QQLocalGroup','Modify-QQLocalGroup',
                'List-QQTreeDeletes','Get-QQTreeDelete','Create-QQTreeDelete','Cancel-QQTreeDelete',
-               'Get-QQTimeSeries','Get-QQCurrentActivity','Get-QQCapacityHistory','Get-QQFilesCapacityHistory'
+               'Get-QQTimeSeries','Get-QQCurrentActivity','Get-QQCapacityHistory','Get-QQFilesCapacityHistory',
+               'List-QQAccessTokens','Get-QQAccessToken', 'Create-QQAccessToken', 'Modify-QQAccessToken', 'Verify-QQUgradeImage', 'Prepare-QQUgrade',
+               'Delete-QQAccessToken', 'Commit-QQUgrade','Get-QQUpgradeStatus', 'List-QQTenants', 'Set-QQMultitenancy', 'Get-QQTenant',
+               'Create-QQTenant','Delete-QQTenant',
+               'List-NFSExports', 'Get-QQNFSExport', 'Delete-QQNFSExport', 'Add-QQNFSExport', 'Modify-QQNFSExport',
+               'Add-QQNFSExportHostAccess', 'List-QQNFSExportHostAccess', 'Remove-QQNFSExportHostAccess',
+               'Get-QQNFSSettings', 'Modify-QQNFSSettings '
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
 CmdletsToExport = '*'

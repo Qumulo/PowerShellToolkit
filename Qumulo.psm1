@@ -36,6 +36,9 @@ Import-Module -Name ($PSScriptRoot + "\QumuloHelp.ps1") -WarningAction SilentlyC
 # Qumulo 
 Import-Module -Name ($PSScriptRoot + "\QumuloSession.ps1") -WarningAction SilentlyContinue -Force
 
+# Qumulo access token functions
+Import-Module -Name ($PSScriptRoot + "\QumuloAccessToken.ps1") -WarningAction SilentlyContinue -Force
+
 # Qumulo directory functions
 Import-Module -Name ($PSScriptRoot + "\QumuloQuota.ps1") -WarningAction SilentlyContinue -Force
 
@@ -92,3 +95,12 @@ Import-Module -Name ($PSScriptRoot + "\QumuloTreeDelete.ps1") -WarningAction Sil
 
 # Qumulo analytics functions
 Import-Module -Name ($PSScriptRoot + "\QumuloAnalytics.ps1") -WarningAction SilentlyContinue -Force
+
+# Qumulo upgrade functions
+Import-Module -Name ($PSScriptRoot + "\QumuloUpgrades.ps1") -WarningAction SilentlyContinue -Force
+
+# Qumulo multitenancy functions
+Import-Module -Name ($PSScriptRoot + "\QumuloMultitenancy.ps1") -WarningAction SilentlyContinue -Force
+
+# Qumulo NFS functions
+Import-Module -Name ($PSScriptRoot + "\QumuloNFS.ps1") -WarningAction SilentlyContinue -Force
