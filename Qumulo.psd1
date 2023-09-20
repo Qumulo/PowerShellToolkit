@@ -62,7 +62,7 @@ ScriptsToProcess = 'QumuloHelp.ps1', 'QumuloSession.ps1', 'QumuloQuota.ps1',
                'QumuloSMB.ps1', 'QumuloNetwork.ps1', 'QumuloAudit.ps1', 
                'QumuloTime.ps1', 'QumuloActiveDirectory.ps1', 'QumuloMonitoring.ps1', 
                'QumuloFileSystem.ps1', 'QumuloRoles.ps1','QumuloFTP.ps1','QumuloFile.ps1',
-               'QumuloNFS.ps1','QumuloReplication.ps1','QumuloAccessToken.ps1','QumuloAnalytics.ps1','QumuloAPIList.ps1',
+               'QumuloNFS.ps1','QumuloReplication.ps1','QumuloAccessToken.ps1','QumuloAnalytics.ps1',
                'QumuloLocalUsers.ps1', 'QumuloLocalGroups.ps1', 'QumuloMultitenancy.ps1', 'QumuloRoles.ps1', 'QumuloShift.ps1',
                'QumuloTime.ps1', 'QumuloTreeDelete.ps', 'QumuloUpgrades.ps1'
 
