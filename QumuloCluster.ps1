@@ -47,7 +47,7 @@ function Get-QQClusterSettings {
 	}
 
 	try {
-        # Existing BearerToken check
+		# Existing BearerToken check
 		if (!$global:Credentials) {
 			Login-QQCluster
 		}
@@ -96,17 +96,13 @@ function List-QQNodes {
         List nodes
     .DESCRIPTION
         List nodes or a node details
-	.PARAMETER Node [ID]
-		The unique ID of the node
     .EXAMPLE
         List-QQNodes [-Json]
-		List-QQNodes -Node [ID] [-Json]
     #>
 
 	# CmdletBinding parameters
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $False)] [string]$Node,
 		[Parameter(Mandatory = $False)] [switch]$Json
 	)
 	if ($SkipCertificateCheck -eq 'true') {
@@ -114,7 +110,7 @@ function List-QQNodes {
 	}
 
 	try {
-        # Existing BearerToken check
+		# Existing BearerToken check
 		if (!$global:Credentials) {
 			Login-QQCluster
 		}
@@ -133,12 +129,9 @@ function List-QQNodes {
 		}
 
 		# API url definition
-		if ($Node) {
-			$url = "/v1/cluster/nodes/$Node"
-		}
-		else {
-			$url = "/v1/cluster/nodes/"
-		}
+
+		$url = "/v1/cluster/nodes/"
+
 
 		# API call run
 		try {
@@ -161,8 +154,76 @@ function List-QQNodes {
 	}
 }
 
+function Get-QQNode {
+<#
+		.SYNOPSIS
+			Get the details of a node
+		.DESCRIPTION
+			Retrieve node-specific info, such as serial number, mac address, uuid, etc
+		.PARAMETER Node [ID]
+			The unique ID of the node
+		.EXAMPLE
+			Get-QQNode -Node [ID] [-Json]
+		#>
+
+	# CmdletBinding parameters
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $True)] [string]$Node,
+		[Parameter(Mandatory = $False)] [switch]$Json
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
+
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
+		}
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+				Login-QQCluster
+			}
+		}
+
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
+
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
+
+		# API url definition
+
+		$url = "/v1/cluster/nodes/$Node"
+
+
+		# API call run
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+
+			# Response
+			if ($Json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $response
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
+}
+
+
 function List-QQUnconfiguredNodes {
-	<#
+<#
 		.SYNOPSIS
 			List unconfigured nodes
 		.DESCRIPTION
@@ -170,59 +231,59 @@ function List-QQUnconfiguredNodes {
 		.EXAMPLE
 			List-QQUnconfiguredNodes [-Json]
 		#>
-	
-		# CmdletBinding parameters
-		[CmdletBinding()]
-		param(
-			[Parameter(Mandatory = $False)] [switch]$Json
-		)
-		if ($SkipCertificateCheck -eq 'true') {
-			$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+
+	# CmdletBinding parameters
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $False)] [switch]$Json
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
+
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
 		}
-	
-		try {
-			# Existing BearerToken check
-			if (!$global:Credentials) {
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
 				Login-QQCluster
 			}
-			else {
-				if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
-					Login-QQCluster
-				}
-			}
-	
-			$bearerToken = $global:Credentials.BearerToken
-			$clusterName = $global:Credentials.ClusterName
-			$portNumber = $global:Credentials.PortNumber
-	
-			$TokenHeader = @{
-				Authorization = "Bearer $bearerToken"
-			}
-	
-			# API url definition
-			$url = "/v1/unconfigured/nodes/"
+		}
 
-	
-			# API call run
-			try {
-				$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
-	
-				# Response
-				if ($Json) {
-					return @($response) | ConvertTo-Json -Depth 10
-				}
-				else {
-					return $response
-				}
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
+
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
+
+		# API url definition
+		$url = "/v1/unconfigured/nodes/"
+
+
+		# API call run
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+
+			# Response
+			if ($Json) {
+				return @($response) | ConvertTo-Json -Depth 10
 			}
-			catch {
-				$_.Exception.Response
+			else {
+				return $response
 			}
 		}
 		catch {
 			$_.Exception.Response
 		}
 	}
+	catch {
+		$_.Exception.Response
+	}
+}
 
 function Get-QQEncryptionStatus {
 <#
@@ -244,7 +305,7 @@ function Get-QQEncryptionStatus {
 	}
 
 	try {
-        # Existing BearerToken check
+		# Existing BearerToken check
 		if (!$global:Credentials) {
 			Login-QQCluster
 		}
@@ -287,7 +348,7 @@ function Get-QQEncryptionStatus {
 }
 
 function Get-QQNodeState {
-	<#
+<#
 		.SYNOPSIS
 			Get the operational state of the node
 		.DESCRIPTION
@@ -308,7 +369,7 @@ function Get-QQNodeState {
 	}
 
 	try {
-        # Existing BearerToken check
+		# Existing BearerToken check
 		if (!$global:Credentials) {
 			Login-QQCluster
 		}
@@ -374,7 +435,7 @@ function List-QQClusterSlots {
 	}
 
 	try {
-        # Existing BearerToken check
+		# Existing BearerToken check
 		if (!$global:Credentials) {
 			Login-QQCluster
 		}
@@ -444,7 +505,7 @@ function Get-QQChassisStatus {
 	}
 
 	try {
-        # Existing BearerToken check
+		# Existing BearerToken check
 		if (!$global:Credentials) {
 			Login-QQCluster
 		}
@@ -491,6 +552,77 @@ function Get-QQChassisStatus {
 	}
 }
 
+function Get-QQUIDLightStatus {
+<#
+		.SYNOPSIS
+			List the status of the identification lights for nodes.
+		.DESCRIPTION
+			List the status of the identification lights for nodes.
+		.PARAMETER Node ID
+			The unique ID of the node
+		.EXAMPLE
+			Get-QQUIDLightStatus [-Json]
+			Get-QQUIDLightStatus -Node [ID] [-Json]
+		#>
+	# CmdletBinding parameters
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $False)] [string]$Node,
+		[Parameter(Mandatory = $False)] [switch]$Json
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
+
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
+		}
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+				Login-QQCluster
+			}
+		}
+
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
+
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
+
+		# API url definition
+		if ($Node) {
+			$url = "/v1/cluster/nodes/$Node/uid-light"
+		}
+		else {
+			$url = "/v1/cluster/nodes/uid-lights/"
+		}
+
+
+
+		# API call run	
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+
+			# Response
+			if ($Json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $response
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
+}
 
 function Get-QQProtectionStatus {
 <#
@@ -512,7 +644,7 @@ function Get-QQProtectionStatus {
 	}
 
 	try {
-        # Existing BearerToken check
+		# Existing BearerToken check
 		if (!$global:Credentials) {
 			Login-QQCluster
 		}
@@ -593,7 +725,7 @@ function Get-QQRestriperStatus {
 		}
 
 		# API url definition
-		$url = "/v1/cluster/restriper/status"
+		$url = "/v1/cluster/protection/restriper/status"
 
 		# API call run	
 		try {
@@ -722,6 +854,172 @@ function Get-QQSSLCaCertificate {
 		# API call run	
 		try {
 			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+
+			# Response
+			if ($Json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $response
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
+}
+
+function Get-QQWebUISettings {
+<#
+	.SYNOPSIS
+		Get configuration options for the Web UI
+	.DESCRIPTION
+		Return settings (such as the inactivity timeout) that the Web UI uses. Because the Web UI can apply these settings before the user logs in, this method doesn't require authentication.
+	.EXAMPLE
+		Get-QQWebUISettings [-Json]
+	#>
+
+	# CmdletBinding parameters
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $False)] [switch]$Json
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
+
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
+		}
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+				Login-QQCluster
+			}
+		}
+
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
+
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
+
+		# API url definition
+		$url = "/v1/web-ui/settings"
+
+		# API call run	
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+
+			# Response
+			if ($Json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $response
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
+}
+
+function Modify-QQWebUISettings {
+<#
+	.SYNOPSIS
+		Get configuration options for the Web UI
+	.DESCRIPTION
+		Return settings (such as the inactivity timeout) that the Web UI uses. Because the Web UI can apply these settings before the user logs in, this method doesn't require authentication.
+	.EXAMPLE
+		Modify-QQWebUISettings [-Json]
+	#>
+
+	# CmdletBinding parameters.
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $False,ParameterSetName = 'InactivityTimeout')] [int16]$InactivityTimeout,
+		[Parameter(Mandatory = $False,ParameterSetName = 'DisableInactivityTimeout')] [switch]$DisableInactivityTimeout,
+		[Parameter(Mandatory = $False,ParameterSetName = 'LoginBanner')] [string]$LoginBanner,
+		[Parameter(Mandatory = $False,ParameterSetName = 'DisableLoginBanner')] [switch]$DisableLoginBanner,
+		[Parameter(Mandatory = $False)] [switch]$Json
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
+
+	# Existing BearerToken check
+	try {
+		if (!$global:Credentials) {
+
+			Login-QQCluster
+		}
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+				Login-QQCluster
+			}
+		}
+
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
+
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
+
+		# API Request Body
+		# API url definition
+		$url = "/v1/web-ui/settings"
+
+		# API call run	
+		try {
+			$existingSettings = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+			Write-Debug ($existingSettings | ConvertTo-Json -Depth 10)
+		}
+		catch {
+			$_.Exception.Response
+		}
+
+
+
+		if ($InactivityTimeout) {
+			$timeout = @{ "nanoseconds" = ($InactivityTimeout * 60000000000) }
+			$existingSettings.inactivity_timeout = $timeout
+		}
+		elseif ($DisableInactivityTimeout) {
+			$timeout = $null
+			$existingSettings.inactivity_timeout = $timeout
+		}
+
+		if ($LoginBanner) {
+			$bannerContent = Get-Content -Path $LoginBanner -Raw
+			$existingSettings.login_banner = $bannerContent
+		}
+		elseif ($DisableLoginBanner) {
+			$bannerContent = $null
+			$existingSettings.login_banner = $bannerContent
+		}
+
+		$body = $existingSettings
+
+		Write-Debug ($body | ConvertTo-Json -Depth 10)
+
+		# API url definition
+		$url = "/v1/web-ui/settings"
+
+		# API call run	
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'PUT' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
 
 			# Response
 			if ($Json) {

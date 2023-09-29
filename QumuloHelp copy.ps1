@@ -234,6 +234,8 @@ function Get-QQHelp {
         List-QQTenants - List all tenants
         Set-QQMultitenancy - Enable or disable multitenancy 
         Get-QQTenant - Get a tenant
+        Create-QQTenant - Create a tenant
+        Delete-QQTenant - Delete a tenant
 
     Upgrade Details
         Get-QQUpgradeStatus - Get the status of the upgrade system

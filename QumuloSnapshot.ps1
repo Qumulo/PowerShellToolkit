@@ -1,4 +1,4 @@
-<#
+﻿<#
 	===========================================================================
 	Created by:   	berat.ulualan@qumulo.com
 	Organization: 	Qumulo, Inc.
@@ -50,9 +50,9 @@ function List-QQSnapshots {
 	# CmdletBinding parameters
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $False, ParameterSetName = "All")] [switch]$All,
-		[Parameter(Mandatory = $True, ParameterSetName = "ExcludeInDelete")] [switch]$ExcludeInDelete,
-		[Parameter(Mandatory = $True, ParameterSetName = "OnlyInDelete")] [switch]$OnlyInDelete,
+		[Parameter(Mandatory = $False,ParameterSetName = "All")] [switch]$All,
+		[Parameter(Mandatory = $True,ParameterSetName = "ExcludeInDelete")] [switch]$ExcludeInDelete,
+		[Parameter(Mandatory = $True,ParameterSetName = "OnlyInDelete")] [switch]$OnlyInDelete,
 		[Parameter(Mandatory = $False)] [switch]$Json
 	)
 	if ($SkipCertificateCheck -eq 'true') {
@@ -85,7 +85,7 @@ function List-QQSnapshots {
 		elseif ($OnlyInDelete) {
 			$url = "/v3/snapshots/?filter=only_in_delete"
 		}
-		else{
+		else {
 			$url = "/v3/snapshots/?filter=all"
 		}
 
@@ -131,9 +131,9 @@ function List-QQSnapshotStatuses {
 	# CmdletBinding parameters
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $False, ParameterSetName = "All")] [switch]$All,
-		[Parameter(Mandatory = $True, ParameterSetName = "ExcludeInDelete")] [switch]$ExcludeInDelete,
-		[Parameter(Mandatory = $True, ParameterSetName = "OnlyInDelete")] [switch]$OnlyInDelete,
+		[Parameter(Mandatory = $False,ParameterSetName = "All")] [switch]$All,
+		[Parameter(Mandatory = $True,ParameterSetName = "ExcludeInDelete")] [switch]$ExcludeInDelete,
+		[Parameter(Mandatory = $True,ParameterSetName = "OnlyInDelete")] [switch]$OnlyInDelete,
 		[Parameter(Mandatory = $False)] [switch]$Json
 	)
 	if ($SkipCertificateCheck -eq 'true') {
@@ -165,7 +165,7 @@ function List-QQSnapshotStatuses {
 		elseif ($OnlyInDelete) {
 			$url = "/v3/snapshots/status/?filter=only_in_delete"
 		}
-		else{
+		else {
 			$url = "/v3/snapshots/status/?filter=all"
 		}
 
@@ -207,7 +207,7 @@ function Get-QQSnapshot {
 	# CmdletBinding parameters
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $True)][string]$id,
+		[Parameter(Mandatory = $True)] [string]$id,
 		[Parameter(Mandatory = $False)] [switch]$Json
 	)
 	if ($SkipCertificateCheck -eq 'true') {
@@ -375,7 +375,7 @@ function Delete-QQSnapshot {
 		# API call run
 		try {
 			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'DELETE' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
-			
+
 			#  Response
 			if ($Json) {
 				return @($response) | ConvertTo-Json -Depth 10
@@ -420,8 +420,8 @@ function Create-QQSnapshot {
 	param(
 		[Parameter(Mandatory = $True,ParameterSetName = "Id")][ValidateNotNullOrEmpty()] [string]$SourceFileId,
 		[Parameter(Mandatory = $True,ParameterSetName = "Path")][ValidateNotNullOrEmpty()] [string]$Path,
-		[Parameter(Mandatory = $False)][string]$Name,
-		[Parameter(Mandatory = $False)][string]$Expiration,
+		[Parameter(Mandatory = $False)] [string]$Name,
+		[Parameter(Mandatory = $False)] [string]$Expiration,
 		[Parameter(Mandatory = $False)] [switch]$Json
 	)
 	if ($SkipCertificateCheck -eq 'true') {
@@ -450,7 +450,7 @@ function Create-QQSnapshot {
 		# Directory Path -> SourceFileID conversion
 		if ($Path) {
 			$htmlPath = ([uri]::EscapeDataString($path))
-			
+
 			# API url definition
 			$url = "/v1/files/$htmlPath/info/attributes"
 			# API call run
@@ -472,7 +472,7 @@ function Create-QQSnapshot {
 
 		# API url definition
 		$url = "/v3/snapshots/"
-		
+
 		# API call run
 		try {
 			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'POST' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
@@ -514,8 +514,8 @@ function Modify-QQSnapshot {
 	# CmdletBinding parameters.
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $True)][string]$Id,
-		[Parameter(Mandatory = $False)][string]$Expiration,
+		[Parameter(Mandatory = $True)] [string]$Id,
+		[Parameter(Mandatory = $False)] [string]$Expiration,
 		[Parameter(Mandatory = $False)] [switch]$Json
 	)
 	if ($SkipCertificateCheck -eq 'true') {
@@ -611,7 +611,7 @@ function Get-QQSnapshotsCapacityUsage {
 
 		# API url definition	
 		$url = "/v1/snapshots/capacity-used-per-snapshot/"
-		
+
 		# API call run
 		try {
 			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
@@ -651,7 +651,7 @@ function Get-QQSnapshotCapacityUsage {
 	# CmdletBinding parameters.
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $True)][string]$Id,
+		[Parameter(Mandatory = $True)] [string]$Id,
 		[Parameter(Mandatory = $False)] [switch]$Json
 	)
 	if ($SkipCertificateCheck -eq 'true') {

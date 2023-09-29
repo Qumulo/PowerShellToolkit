@@ -41,19 +41,19 @@ function Get-QQSyslogConfig {
         https://care.qumulo.com/hc/en-us/articles/360021454193-Qumulo-Core-Audit-Logging
     #>
 
-    # CmdletBinding parameters.
+	# CmdletBinding parameters.
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $False)][switch]$Json
+		[Parameter(Mandatory = $False)] [switch]$Json
 	)
 	if ($SkipCertificateCheck -eq 'true') {
 		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
 	}
 
-    # Existing BearerToken check
+	# Existing BearerToken check
 	try {
 		if (!$global:Credentials) {
-            
+
 			Login-QQCluster
 		}
 		else {
@@ -70,14 +70,14 @@ function Get-QQSyslogConfig {
 			Authorization = "Bearer $bearerToken"
 		}
 
-        # API url definition
+		# API url definition
 		$url = "/v1/audit/syslog/config"
 
-        # API call run	
+		# API call run	
 		try {
 			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
 
-            # Response
+			# Response
 			if ($json) {
 				return @($response) | ConvertTo-Json -Depth 10
 			}
@@ -106,57 +106,57 @@ function Get-QQSyslogStatus {
         https://care.qumulo.com/hc/en-us/articles/360021454193-Qumulo-Core-Audit-Logging#details-0-2
     #>
 
-    # CmdletBinding parameters. 
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $False)]
-        [switch]$json
-    )
-    if ($SkipCertificateCheck -eq 'true') {
-        $PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
-    }
+	# CmdletBinding parameters. 
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $False)]
+		[switch]$json
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
 
-    # Existing BearerToken check
-    try {
-        if (!$global:Credentials) {
-            Login-QQCluster
-        }
-        else {
-            if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
-                Login-QQCluster
-            }
-        }
+	# Existing BearerToken check
+	try {
+		if (!$global:Credentials) {
+			Login-QQCluster
+		}
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+				Login-QQCluster
+			}
+		}
 
-        $bearerToken = $global:Credentials.BearerToken
-        $clusterName = $global:Credentials.ClusterName
-        $portNumber = $global:Credentials.PortNumber
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
 
-        $TokenHeader = @{
-            Authorization = "Bearer $bearerToken"
-        }
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
 
-        # API url definition
-        $url = "/v1/audit/syslog/status"
+		# API url definition
+		$url = "/v1/audit/syslog/status"
 
-        # API call run	
-        try {
-            $response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+		# API call run	
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
 
-            # Response
-            if ($json) {
-                return @($response) | ConvertTo-Json -Depth 10
-            }
-            else {
-                return $response
-            }
-        }
-        catch {
-            $_.Exception.Response
-        }
-    }
-    catch {
-        $_.Exception.Response
-    }
+			# Response
+			if ($json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $response
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
 }
 
 function Set-QQSyslogConfig {
@@ -180,85 +180,85 @@ function Set-QQSyslogConfig {
         https://care.qumulo.com/hc/en-us/articles/360021454193-Qumulo-Core-Audit-Logging#details-0-2
     #>
 
-    # CmdletBinding parameters.
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $False)][switch]$json,
-        [Parameter(Mandatory = $False)][bool]$Enable,
-        [Parameter(Mandatory = $False)][int32]$ServerPort,
-        [Parameter(Mandatory = $False)]
-            # Valid FQDN or IP address check
-            [ValidateScript({
-                If($_ -As [IPAddress]){
-                    $True
-                }
-                Else{
-                    Try{
-                        [System.Net.Dns]::GetHostEntry($_)
-                    }
-                    Catch{
-                        Throw "$_ is not a valid IP or hostname. Try again."
-                    }
-                }
-                ###
-            })][string]$ServerAddress
-    )
+	# CmdletBinding parameters.
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $False)] [switch]$json,
+		[Parameter(Mandatory = $False)] [bool]$Enable,
+		[Parameter(Mandatory = $False)] [int32]$ServerPort,
+		[Parameter(Mandatory = $False)]
+		# Valid FQDN or IP address check
+		[ValidateScript({
+				if ($_ -as [ipaddress]) {
+					$True
+				}
+				else {
+					try {
+						[System.Net.Dns]::GetHostEntry($_)
+					}
+					catch {
+						throw "$_ is not a valid IP or hostname. Try again."
+					}
+				}
+				###
+			})] [string]$ServerAddress
+	)
 
-    if ($SkipCertificateCheck -eq 'true') {
-        $PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
-    }
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
 
-    try {
-        # Existing BearerToken check
-        if (!$global:Credentials) {
-            Login-QQCluster
-        }
-        else {
-            if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
-                Login-QQCluster
-            }
-        }
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
+		}
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+				Login-QQCluster
+			}
+		}
 
-        $bearerToken = $global:Credentials.BearerToken
-        $clusterName = $global:Credentials.ClusterName
-        $portNumber = $global:Credentials.PortNumber
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
 
-        $TokenHeader = @{
-            Authorization = "Bearer $bearerToken"
-        }
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
 
-        # API Request Body
-        $body = @{}
+		# API Request Body
+		$body = @{}
 
-        if($Enable -eq $true){$body += @{"enabled" = $true}}
-        else{$body += @{"enabled" = $false}}
-        if($ServerAddress){$body += @{"server_address" = $ServerAddress}}
-        if($ServerPort){$body += @{"server_port" = $ServerPort}}
+		if ($Enable -eq $true) { $body += @{ "enabled" = $true } }
+		else { $body += @{ "enabled" = $false } }
+		if ($ServerAddress) { $body += @{ "server_address" = $ServerAddress } }
+		if ($ServerPort) { $body += @{ "server_port" = $ServerPort } }
 
-        Write-Debug($body| ConvertTo-Json -Depth 10)
+		Write-Debug ($body | ConvertTo-Json -Depth 10)
 
-        # API url definition
-        $url = "/v1/audit/syslog/config"
+		# API url definition
+		$url = "/v1/audit/syslog/config"
 
-        # API call run
-        try {
-            $response = Invoke-RestMethod -SkipCertificateCheck -Method 'PATCH' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
+		# API call run
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'PATCH' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
 
-            # Response
-            if ($json) {
-                return @($response) | ConvertTo-Json -Depth 10
-            }
-            else {
-                return $response
-            }
-        }
-        catch {
-            $_.Exception.Response
-        }
-    }
-    catch {
-        $_.Exception.Response
-    }
+			# Response
+			if ($json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $response
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
 }
 
 function Get-QQCloudWatchConfig {
@@ -273,60 +273,60 @@ function Get-QQCloudWatchConfig {
         https://care.qumulo.com/hc/en-us/articles/360048158293-Qumulo-in-AWS-Audit-Logging-with-CloudWatch#requirements-0-1
     #>
 
-    # CmdletBinding parameters. 
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $False)]
-        [switch]$json
-    )
+	# CmdletBinding parameters. 
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $False)]
+		[switch]$json
+	)
 
-    if ($SkipCertificateCheck -eq 'true') {
-        $PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
-    }
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
 
-    try {
-        # Existing BearerToken check
-        if (!$global:Credentials) {
-            Login-QQCluster
-        }
-        else {
-            if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
-                Login-QQCluster
-            }
-        }
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
+		}
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+				Login-QQCluster
+			}
+		}
 
-        $bearerToken = $global:Credentials.BearerToken
-        $clusterName = $global:Credentials.ClusterName
-        $portNumber = $global:Credentials.PortNumber
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
 
-        $TokenHeader = @{
-            Authorization = "Bearer $bearerToken"
-        }
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
 
-        # API url definition
-        $url = "/v1/audit/cloudwatch/config"
+		# API url definition
+		$url = "/v1/audit/cloudwatch/config"
 
-        # API call run	
-        try {
-            $response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+		# API call run	
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
 
-            # Response
-            if ($json) {
-                return @($response) | ConvertTo-Json -Depth 10
-            }
-            else {
-                return $response
-            }
-        }
-        catch {
-            $_.Exception.Response
-        }
-    }
-    catch {
-        $_.Exception.Response
-    }
+			# Response
+			if ($json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $response
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
 }
-    
+
 function Get-QQCloudWatchStatus {
 <#
     .SYNOPSIS
@@ -339,56 +339,56 @@ function Get-QQCloudWatchStatus {
         https://care.qumulo.com/hc/en-us/articles/360048158293-Qumulo-in-AWS-Audit-Logging-with-CloudWatch#requirements-0-1
     #>
 
-    # CmdletBinding parameters
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $False)]
-        [switch]$json
-    )
-    if ($SkipCertificateCheck -eq 'true') {
-        $PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
-    }
+	# CmdletBinding parameters
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $False)]
+		[switch]$json
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
 
-    try {
-        # Existing BearerToken check
-        if (!$global:Credentials) {
-            Login-QQCluster
-        }
-        else {
-            if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
-                Login-QQCluster
-            }
-        }
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
+		}
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+				Login-QQCluster
+			}
+		}
 
-        $bearerToken = $global:Credentials.BearerToken
-        $clusterName = $global:Credentials.ClusterName
-        $portNumber = $global:Credentials.PortNumber
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
 
-        $TokenHeader = @{
-            Authorization = "Bearer $bearerToken"
-        }
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
 
-        # API url definition
-        $url = "/v1/audit/cloudwatch/status"
-        try {
-            # API call run	
-            $response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+		# API url definition
+		$url = "/v1/audit/cloudwatch/status"
+		try {
+			# API call run	
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
 
-            # Response
-            if ($json) {
-                return @($response) | ConvertTo-Json -Depth 10
-            }
-            else {
-                return $response
-            }
-        }
-        catch {
-            $_.Exception.Response
-        }
-    }
-    catch {
-        $_.Exception.Response
-    }
+			# Response
+			if ($json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $response
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
 }
 
 function Set-QQCloudWatchConfig {
@@ -412,67 +412,67 @@ function Set-QQCloudWatchConfig {
         https://care.qumulo.com/hc/en-us/articles/360048158293-Qumulo-in-AWS-Audit-Logging-with-CloudWatch#requirements-0-
     #>
 
-    # CmdletBinding parameters
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $False)][switch]$json,
-        [Parameter(Mandatory = $False)][bool]$Enable,
-        [Parameter(Mandatory = $False)][string]$LogGroupName,
-        [Parameter(Mandatory = $False)][string]$Region
-    )
+	# CmdletBinding parameters
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $False)] [switch]$json,
+		[Parameter(Mandatory = $False)] [bool]$Enable,
+		[Parameter(Mandatory = $False)] [string]$LogGroupName,
+		[Parameter(Mandatory = $False)] [string]$Region
+	)
 
-    if ($SkipCertificateCheck -eq 'true') {
-        $PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
-    }
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
 
-    try {
-        # Existing BearerToken check
-        if (!$global:Credentials) {
-            Login-QQCluster
-        }
-        else {
-            if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
-                Login-QQCluster
-            }
-        }
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
+		}
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+				Login-QQCluster
+			}
+		}
 
-        $bearerToken = $global:Credentials.BearerToken
-        $clusterName = $global:Credentials.ClusterName
-        $portNumber = $global:Credentials.PortNumber
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
 
-        $TokenHeader = @{
-            Authorization = "Bearer $bearerToken"
-        }
-        # API Request Body
-        $body = @{}
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
+		# API Request Body
+		$body = @{}
 
-        if($Enable -eq $true){$body += @{"enabled" = $true}}
-        else{$body += @{"enabled" = $false}}
-        if($LogGroupName){$body += @{"log_group_name" = $LogGroupName}}
-        if($Region){$body += @{"region" = $Region}}
+		if ($Enable -eq $true) { $body += @{ "enabled" = $true } }
+		else { $body += @{ "enabled" = $false } }
+		if ($LogGroupName) { $body += @{ "log_group_name" = $LogGroupName } }
+		if ($Region) { $body += @{ "region" = $Region } }
 
-        Write-Debug($body| ConvertTo-Json -Depth 10)
+		Write-Debug ($body | ConvertTo-Json -Depth 10)
 
-        # API url definition
-        $url = "/v1/audit/cloudwatch/config"
+		# API url definition
+		$url = "/v1/audit/cloudwatch/config"
 
-        # API call run	
-        try {
-            $response = Invoke-RestMethod -SkipCertificateCheck -Method 'PATCH' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
+		# API call run	
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'PATCH' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
 
-            # Response
-            if ($json) {
-                return @($response) | ConvertTo-Json -Depth 10
-            }
-            else {
-                return $response
-            }
-        }
-        catch {
-            $_.Exception.Response
-        }
-    }
-    catch {
-        $_.Exception.Response
-    }
+			# Response
+			if ($json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $response
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
 }

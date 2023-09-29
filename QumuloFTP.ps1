@@ -1,4 +1,4 @@
-<#
+﻿<#
 	===========================================================================
 	Created by:   	berat.ulualan@qumulo.com
 	Organization: 	Qumulo, Inc.
@@ -95,7 +95,7 @@ function Get-QQFTPStatus {
 }
 
 function Get-QQFTPSettings {
-	<#
+<#
 		.SYNOPSIS
 			Get FTP server settings
 		.DESCRIPTION
@@ -105,59 +105,59 @@ function Get-QQFTPSettings {
 		.LINK
 			https://care.qumulo.com/hc/en-us/articles/115014912268-FTP-in-Qumulo-Core#active-directory-users-for-ftp-0-7
 		#>
-	
-		# CmdletBinding parameters.
-		[CmdletBinding()]
-		param(
-			[Parameter(Mandatory = $False)] [switch]$Json
-		)
-		if ($SkipCertificateCheck -eq 'true') {
-			$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+
+	# CmdletBinding parameters.
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $False)] [switch]$Json
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
+
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
 		}
-	
-		try {
-			# Existing BearerToken check
-			if (!$global:Credentials) {
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
 				Login-QQCluster
 			}
+		}
+
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
+
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
+
+
+		# API url definition
+		$url = "/v0/ftp/settings"
+
+		# API call run	
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+
+			# Response
+			if ($Json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
 			else {
-				if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
-					Login-QQCluster
-				}
-			}
-	
-			$bearerToken = $global:Credentials.BearerToken
-			$clusterName = $global:Credentials.ClusterName
-			$portNumber = $global:Credentials.PortNumber
-	
-			$TokenHeader = @{
-				Authorization = "Bearer $bearerToken"
-			}
-	
-	
-			# API url definition
-			$url = "/v0/ftp/settings"
-	
-			# API call run	
-			try {
-				$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
-	
-				# Response
-				if ($Json) {
-					return @($response) | ConvertTo-Json -Depth 10
-				}
-				else {
-					return $response
-				}
-			}
-			catch {
-				$_.Exception.Response
+				return $response
 			}
 		}
 		catch {
 			$_.Exception.Response
 		}
 	}
+	catch {
+		$_.Exception.Response
+	}
+}
 
 function Modify-QQFTPSettings {
 <#
@@ -188,18 +188,18 @@ function Modify-QQFTPSettings {
 	# CmdletBinding parameters
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $False)][ValidateSet("True", "False")][string]$Enabled,
-		[Parameter(Mandatory = $False)][ValidateSet("True", "False")][string]$CheckRemoteHost,
-		[Parameter(Mandatory = $False)][ValidateSet("True", "False")][string]$LogOperations,
-		[Parameter(Mandatory = $False)][ValidateSet("True", "False")][string]$ChrootUsers,
-		[Parameter(Mandatory = $False)][ValidateSet("True", "False")][string]$AllowUnencryptedConnections,
-		[Parameter(Mandatory = $False)][ValidateSet("True", "False")][string]$ExpandWildcards,
-		[Parameter(Mandatory = $False)][switch]$AnonymousUserNone,
-		[Parameter(Mandatory = $False)][string]$AnonymousUserAsLocalUser,
-		[Parameter(Mandatory = $False)][string]$Greeting,
+		[Parameter(Mandatory = $False)][ValidateSet("True","False")] [string]$Enabled,
+		[Parameter(Mandatory = $False)][ValidateSet("True","False")] [string]$CheckRemoteHost,
+		[Parameter(Mandatory = $False)][ValidateSet("True","False")] [string]$LogOperations,
+		[Parameter(Mandatory = $False)][ValidateSet("True","False")] [string]$ChrootUsers,
+		[Parameter(Mandatory = $False)][ValidateSet("True","False")] [string]$AllowUnencryptedConnections,
+		[Parameter(Mandatory = $False)][ValidateSet("True","False")] [string]$ExpandWildcards,
+		[Parameter(Mandatory = $False)] [switch]$AnonymousUserNone,
+		[Parameter(Mandatory = $False)] [string]$AnonymousUserAsLocalUser,
+		[Parameter(Mandatory = $False)] [string]$Greeting,
 		[Parameter(Mandatory = $False)] [switch]$Json
 	)
-	
+
 	if ($SkipCertificateCheck -eq 'true') {
 		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
 	}
@@ -224,56 +224,56 @@ function Modify-QQFTPSettings {
 		}
 
 
-			# API url definition
-			$url = "/v0/ftp/settings"
+		# API url definition
+		$url = "/v0/ftp/settings"
 
-			# API body definition
-			$body = @{}
+		# API body definition
+		$body = @{}
 
-			if($Enabled){
-				if($Enabled -eq "True"){$body += (@{ enabled = $True})}
-				elseif($Enabled -eq "False"){$body += (@{ enabled = $False})}
-			}
-			if($CheckRemoteHost){
-				if($CheckRemoteHost -eq "True"){$body += (@{ check_remote_host = $True})}
-				elseif($CheckRemoteHost -eq "False"){$body += (@{ check_remote_host = $False})}
-			}
-			if($LogOperations){
-				if($LogOperations -eq "True"){$body += (@{ log_operations = $True})}
-				elseif($LogOperations -eq "False"){$body += (@{ log_operations = $False})}
-			}
-			if($ChrootUsers){
-				if($ChrootUsers -eq "True"){$body += (@{ chroot_users = $True})}
-				elseif($ChrootUsers -eq "False"){$body += (@{ chroot_users = $False})}
-			}
-			if($AllowUnencryptedConnections){
-				if($AllowUnencryptedConnections -eq "True"){$body += (@{ allow_unencrypted_connections = $True})}
-				elseif($AllowUnencryptedConnections -eq "False"){$body += (@{ allow_unencrypted_connections = $False})}
-			}
-			if($ExpandWildcards){
-				if($ExpandWildcards -eq "True"){$body += (@{ expand_wildcards = $True})}
-				elseif($ExpandWildcards -eq "False"){$body += (@{ expand_wildcards = $False})}
-			}
-			if($AnonymousUserAsLocalUser){$body += (@{ anonymous = $AnonymousUserAsLocalUser})}
-			if($AnonymousUserNone){$body += (@{  anonymous = ""})}
-			if($Greeting){$body += (@{ greeting = $Greeting})}
+		if ($Enabled) {
+			if ($Enabled -eq "True") { $body += (@{ enabled = $True }) }
+			elseif ($Enabled -eq "False") { $body += (@{ enabled = $False }) }
+		}
+		if ($CheckRemoteHost) {
+			if ($CheckRemoteHost -eq "True") { $body += (@{ check_remote_host = $True }) }
+			elseif ($CheckRemoteHost -eq "False") { $body += (@{ check_remote_host = $False }) }
+		}
+		if ($LogOperations) {
+			if ($LogOperations -eq "True") { $body += (@{ log_operations = $True }) }
+			elseif ($LogOperations -eq "False") { $body += (@{ log_operations = $False }) }
+		}
+		if ($ChrootUsers) {
+			if ($ChrootUsers -eq "True") { $body += (@{ chroot_users = $True }) }
+			elseif ($ChrootUsers -eq "False") { $body += (@{ chroot_users = $False }) }
+		}
+		if ($AllowUnencryptedConnections) {
+			if ($AllowUnencryptedConnections -eq "True") { $body += (@{ allow_unencrypted_connections = $True }) }
+			elseif ($AllowUnencryptedConnections -eq "False") { $body += (@{ allow_unencrypted_connections = $False }) }
+		}
+		if ($ExpandWildcards) {
+			if ($ExpandWildcards -eq "True") { $body += (@{ expand_wildcards = $True }) }
+			elseif ($ExpandWildcards -eq "False") { $body += (@{ expand_wildcards = $False }) }
+		}
+		if ($AnonymousUserAsLocalUser) { $body += (@{ anonymous = $AnonymousUserAsLocalUser }) }
+		if ($AnonymousUserNone) { $body += (@{ anonymous = "" }) }
+		if ($Greeting) { $body += (@{ greeting = $Greeting }) }
 
-			Write-Debug($body | ConvertTo-Json -Depth 10)
+		Write-Debug ($body | ConvertTo-Json -Depth 10)
 
-			# API call run
-			try {
-				$response = Invoke-RestMethod -SkipCertificateCheck -Method 'PATCH' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
+		# API call run
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'PATCH' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
 
-				if ($Json) {
-					return @($response) | ConvertTo-Json -Depth 10
-				}
-				else {
-					return $response
-				}
+			if ($Json) {
+				return @($response) | ConvertTo-Json -Depth 10
 			}
-			catch {
-				$_.Exception.Response
+			else {
+				return $response
 			}
+		}
+		catch {
+			$_.Exception.Response
+		}
 	}
 	catch {
 		$_.Exception.Response

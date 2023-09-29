@@ -1,4 +1,4 @@
-<#
+﻿<#
 	===========================================================================
 	Created by:   	berat.ulualan@qumulo.com
 	Organization: 	Qumulo, Inc.
@@ -318,16 +318,16 @@ function Create-QQObjectRelationship {
 	param(
 		[Parameter(Mandatory = $True,ParameterSetName = "LocalDirectoryId")] [string]$LocalId,
 		[Parameter(Mandatory = $True,ParameterSetName = "LocalDirectoryPath")] [string]$LocalPath,
-		[Parameter(Mandatory = $True)][ValidateSet("Copy_From_Object","Copy_To_Object")][string]$Direction,
+		[Parameter(Mandatory = $True)][ValidateSet("Copy_From_Object","Copy_To_Object")] [string]$Direction,
 		[Parameter(Mandatory = $True)] [string]$ObjectFolder,
 		[Parameter(Mandatory = $True)] [string]$Bucket,
 		[Parameter(Mandatory = $True)] [string]$Region,
 		[Parameter(Mandatory = $True)] [string]$AccessKeyId,
 		[Parameter(Mandatory = $True)] [string]$SecretAccessKey,
 		[Parameter(Mandatory = $False)] [string]$ObjectStoreAddress,
-		[Parameter(Mandatory = $False)] [int32]$UsePort=443,
+		[Parameter(Mandatory = $False)] [int32]$UsePort = 443,
 		[Parameter(Mandatory = $False)] [string]$CACertificate,
-		[Parameter(Mandatory = $False)][ValidateSet("Bucket_Style_Path","Bucket_Style_Virtual_Hosted")][string]$BucketAddressingStyle= "BUCKET_STYLE_VIRTUAL_HOSTED",
+		[Parameter(Mandatory = $False)][ValidateSet("Bucket_Style_Path","Bucket_Style_Virtual_Hosted")] [string]$BucketAddressingStyle = "BUCKET_STYLE_VIRTUAL_HOSTED",
 		[Parameter(Mandatory = $False)] [switch]$Json
 	)
 	if ($SkipCertificateCheck -eq 'true') {
@@ -356,69 +356,69 @@ function Create-QQObjectRelationship {
 		# API Request body
 
 		# Local file path -> Local file Id conversion 
-			if ($localpath) {
-				$htmlPath = ([uri]::EscapeDataString($localpath))
-				# API url definition
-				$url = "/v1/files/$htmlPath/info/attributes"
-				
-				# API call run
-				try {
-					$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
-					$localid = $($response.id)
-				}
-				catch {
-					$_.Exception.Response
-				}
-			}
-
-			if (!$bucketaddressingstyle) {
-				$bucketaddressingstyle = "BUCKET_STYLE_VIRTUAL_HOSTED"
-			}
-
-			if (!$useport) {
-				$useport = 443
-			}
-
-			if (!$objectstoreaddress) {
-				$objectstoreaddress = "s3.$region.amazonaws.com"
-			}
-
-			$body = @{
-				"access_key_id" = $AccessKeyId
-				"secret_access_key" = $SecretAccessKey
-				"bucket" = $Bucket
-				"port" = $UsePort
-				"region" = $Region
-				"direction" = $Direction.ToUpper()
-				"local_directory_id" = $LocalId
-				"object_folder" = $ObjectFolder
-				"object_store_address" = $ObjectStoreAddress
-				"bucket_style" = $BucketAddressingStyle
-			}
-
-			if ($CACertificate) {
-				$body += @{ "ca_certificate" = $CACertificate }
-			}
-
-			Write-Debug($body| ConvertTo-Json -Depth 10)
-
+		if ($localpath) {
+			$htmlPath = ([uri]::EscapeDataString($localpath))
 			# API url definition
-			$url = "/v3/replication/object-relationships/"
+			$url = "/v1/files/$htmlPath/info/attributes"
 
 			# API call run
 			try {
-				$response = Invoke-RestMethod -SkipCertificateCheck -Method 'POST' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
-
-				if ($json) {
-					return @($response) | ConvertTo-Json -Depth 10
-				}
-				else {
-					return $response
-				}
+				$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+				$localid = $($response.id)
 			}
 			catch {
 				$_.Exception.Response
 			}
+		}
+
+		if (!$bucketaddressingstyle) {
+			$bucketaddressingstyle = "BUCKET_STYLE_VIRTUAL_HOSTED"
+		}
+
+		if (!$useport) {
+			$useport = 443
+		}
+
+		if (!$objectstoreaddress) {
+			$objectstoreaddress = "s3.$region.amazonaws.com"
+		}
+
+		$body = @{
+			"access_key_id" = $AccessKeyId
+			"secret_access_key" = $SecretAccessKey
+			"bucket" = $Bucket
+			"port" = $UsePort
+			"region" = $Region
+			"direction" = $Direction.ToUpper()
+			"local_directory_id" = $LocalId
+			"object_folder" = $ObjectFolder
+			"object_store_address" = $ObjectStoreAddress
+			"bucket_style" = $BucketAddressingStyle
+		}
+
+		if ($CACertificate) {
+			$body += @{ "ca_certificate" = $CACertificate }
+		}
+
+		Write-Debug ($body | ConvertTo-Json -Depth 10)
+
+		# API url definition
+		$url = "/v3/replication/object-relationships/"
+
+		# API call run
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'POST' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
+
+			if ($json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $response
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
 	}
 	catch {
 		$_.Exception.Response
@@ -471,7 +471,7 @@ function Delete-QQObjectRelationship {
 		# API call run
 		try {
 			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'DELETE' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
-			
+
 			#  Response
 			return ("$id was deleted successfully.")
 		}
@@ -533,7 +533,7 @@ function Start-QQObjectRelationship {
 
 			# API url definition
 			$url = "/v3/replication/object-relationships/$id/status"
-			
+
 			# API call run
 			try {
 				$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
@@ -600,14 +600,14 @@ function Abort-QQObjectRelationship {
 
 		# API url definition
 		$url = "/v3/replication/object-relationships/$id/abort-replication"
-		
+
 		# API call run
 		try {
 			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'POST' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
 
 			# API url definition
 			$url = "/v3/replication/object-relationships/$id/status"
-			
+
 			# API call run
 			try {
 				$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop

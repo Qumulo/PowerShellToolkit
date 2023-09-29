@@ -52,11 +52,11 @@ function Login-QQCluster {
 	# CmdletBinding parameters. If Password is not given in command prompt, it will request as a input and it won't be shown as a clear text. 	
 	[CmdletBinding(DefaultParameterSetName = 'Secret')]
 	param(
-		[Parameter(Mandatory = $True)][ValidateNotNullOrEmpty()][Alias("c")][string]$clusterName,
-		[Parameter(Mandatory = $False)][ValidateNotNullOrEmpty()][Alias("p")][int]$portNumber=8000,
-		[Parameter(Mandatory = $True)][ValidateNotNullOrEmpty()][Alias("u")][string]$userName,
+		[Parameter(Mandatory = $True)][ValidateNotNullOrEmpty()][Alias("c")] [string]$clusterName,
+		[Parameter(Mandatory = $False)][ValidateNotNullOrEmpty()][Alias("p")] [int]$portNumber = 8000,
+		[Parameter(Mandatory = $True)][ValidateNotNullOrEmpty()][Alias("u")] [string]$userName,
 		[Parameter(Mandatory = $True,ParameterSetName = 'Secret')] [Security.SecureString]${ClusterPassword},
-		[Parameter(Mandatory = $True,ParameterSetName = 'Plain')][Alias("pass")][string]$Password)
+		[Parameter(Mandatory = $True,ParameterSetName = 'Plain')][Alias("pass")] [string]$Password)
 
 	if ($SkipCertificateCheck -eq 'true') {
 		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
@@ -83,7 +83,7 @@ function Login-QQCluster {
 		# API call run	
 		try {
 			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'POST' -Uri "https://${ClusterName}:$PortNumber$Url" -Body ($Body | ConvertTo-Json -Depth 10) -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
-			
+
 			# Outputs
 			$BearerToken = $response.bearer_token
 
@@ -145,7 +145,7 @@ function List-QQCurrentUser {
 		# API call run	
 		try {
 			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
-		
+
 			# Outputs
 			if ($json) {
 				return @($response) | ConvertTo-Json -Depth 10
@@ -292,4 +292,4 @@ function List-QQAllPrivileges {
 		$_.Exception.Response
 	}
 }
-	
+

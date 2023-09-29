@@ -41,14 +41,14 @@ function List-QQLocalGroups {
 
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $False)][switch]$Json
+		[Parameter(Mandatory = $False)] [switch]$Json
 	)
 	if ($SkipCertificateCheck -eq 'true') {
 		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
 	}
 
 	try {
-        # Existing BearerToken check
+		# Existing BearerToken check
 		if (!$global:Credentials) {
 			Login-QQCluster
 		}
@@ -66,14 +66,14 @@ function List-QQLocalGroups {
 			Authorization = "Bearer $bearerToken"
 		}
 
-        # API url definition
+		# API url definition
 		$url = "/v1/groups/"
 
-        # API call ru
+		# API call ru
 		try {
 			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
 
-            # Response
+			# Response
 			if ($Json) {
 				return @($response) | ConvertTo-Json -Depth 10
 			}
@@ -100,77 +100,77 @@ function Get-QQLocalGroup {
         Get-QQLocalGroup -Id [ID] [-Json]
         Get-QQLocalGroup -Name [USERNAME] [-Json]
     #>
-    
-    # CmdletBinding parameters
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $True,ParameterSetName = "Id")][ValidateNotNullOrEmpty()] [string]$Id,
+
+	# CmdletBinding parameters
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $True,ParameterSetName = "Id")][ValidateNotNullOrEmpty()] [string]$Id,
 		[Parameter(Mandatory = $True,ParameterSetName = "Name")][ValidateNotNullOrEmpty()] [string]$Name,
-        [Parameter(Mandatory = $False)][switch]$Json
-    )
-    if ($SkipCertificateCheck -eq 'true') {
-        $PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
-    }
+		[Parameter(Mandatory = $False)] [switch]$Json
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
 
-    try {
-        # Existing BearerToken check
-        if (!$global:Credentials) {
-            Login-QQCluster
-        }
-        else {
-            if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
-                Login-QQCluster
-            }
-        }
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
+		}
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+				Login-QQCluster
+			}
+		}
 
-        $bearerToken = $global:Credentials.BearerToken
-        $clusterName = $global:Credentials.ClusterName
-        $portNumber = $global:Credentials.PortNumber
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
 
-        $TokenHeader = @{
-            Authorization = "Bearer $bearerToken"
-        }
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
 
-        if($Name){
-            # API url definition
-            $url = "/v1/groups/"
+		if ($Name) {
+			# API url definition
+			$url = "/v1/groups/"
 
-            # API call run
-            try {
-                $groups = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+			# API call run
+			try {
+				$groups = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
 
-                foreach ($group in $groups){
-                    if($Name -eq $group.name){
-                        $Id = $group.id
-                    }
-                }
-            }
-            catch {
-                $_.Exception.Response
-            }
-        }
-         # API url definition
-         $url = "/v1/groups/$Id"
+				foreach ($group in $groups) {
+					if ($Name -eq $group.Name) {
+						$Id = $group.id
+					}
+				}
+			}
+			catch {
+				$_.Exception.Response
+			}
+		}
+		# API url definition
+		$url = "/v1/groups/$Id"
 
-         # API call run
-         try {
-             $response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
-        
-            # Response
-            if ($Json) {
-                return @($response) | ConvertTo-Json -Depth 10
-            }
-            else {
-                return $response
-            }
-        }
-         catch {
-             $_.Exception.Response
-         }
-    }
-    catch {
-        $_.Exception.Response
-    }
+		# API call run
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+
+			# Response
+			if ($Json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $response
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
 }
 
 function Get-QQGroupMembers {
@@ -183,77 +183,77 @@ function Get-QQGroupMembers {
         Get-QQGroupMembers -Id [ID] [-Json]
         Get-QQGroupMembers-Name [USERNAME] [-Json]
     #>
-    
-    # CmdletBinding parameters
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $True,ParameterSetName = "Id")][ValidateNotNullOrEmpty()] [string]$Id,
-        [Parameter(Mandatory = $True,ParameterSetName = "Name")][ValidateNotNullOrEmpty()] [string]$Name,
-        [Parameter(Mandatory = $False)][switch]$Json
-    )
-    if ($SkipCertificateCheck -eq 'true') {
-        $PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
-    }
 
-    try {
-        # Existing BearerToken check
-        if (!$global:Credentials) {
-            Login-QQCluster
-        }
-        else {
-            if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
-                Login-QQCluster
-            }
-        }
+	# CmdletBinding parameters
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $True,ParameterSetName = "Id")][ValidateNotNullOrEmpty()] [string]$Id,
+		[Parameter(Mandatory = $True,ParameterSetName = "Name")][ValidateNotNullOrEmpty()] [string]$Name,
+		[Parameter(Mandatory = $False)] [switch]$Json
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
 
-        $bearerToken = $global:Credentials.BearerToken
-        $clusterName = $global:Credentials.ClusterName
-        $portNumber = $global:Credentials.PortNumber
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
+		}
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+				Login-QQCluster
+			}
+		}
 
-        $TokenHeader = @{
-            Authorization = "Bearer $bearerToken"
-        }
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
 
-        if($Name){
-            # API url definition
-            $url = "/v1/groups/"
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
 
-            # API call run
-            try {
-                $groups = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+		if ($Name) {
+			# API url definition
+			$url = "/v1/groups/"
 
-                foreach ($group in $groups){
-                    if($Name -eq $group.name){
-                        $Id = $group.id
-                    }
-                }
-            }
-            catch {
-                $_.Exception.Response
-            }
-        }
-            # API url definition
-            $url = "/v1/groups/$Id/members/"
+			# API call run
+			try {
+				$groups = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
 
-            # API call run
-            try {
-                $response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
-        
-            # Response
-            if ($Json) {
-                return @($response) | ConvertTo-Json -Depth 10
-            }
-            else {
-                return $response
-            }
-        }
-            catch {
-                $_.Exception.Response
-            }
-    }
-    catch {
-        $_.Exception.Response
-    }
+				foreach ($group in $groups) {
+					if ($Name -eq $group.Name) {
+						$Id = $group.id
+					}
+				}
+			}
+			catch {
+				$_.Exception.Response
+			}
+		}
+		# API url definition
+		$url = "/v1/groups/$Id/members/"
+
+		# API call run
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+
+			# Response
+			if ($Json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $response
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
 }
 
 function Add-QQLocalGroup {
@@ -270,74 +270,74 @@ function Add-QQLocalGroup {
         Add-QQLocalGroup -Name [GROUPNAME] [-Json]
     #>
 
-    # CmdletBinding parameters
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $False)][switch]$Json,
-        [Parameter(Mandatory = $True)][string]$Name,
-        [Parameter(Mandatory = $False)][string]$Gid
-    )
-    if ($SkipCertificateCheck -eq 'true') {
-        $PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
-    }
+	# CmdletBinding parameters
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $False)] [switch]$Json,
+		[Parameter(Mandatory = $True)] [string]$Name,
+		[Parameter(Mandatory = $False)] [string]$Gid
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
 
-    try {
-        # Existing BearerToken check
-        if (!$global:Credentials) {
-            Login-QQCluster
-        }
-        else {
-            if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
-                Login-QQCluster
-            }
-        }
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
+		}
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+				Login-QQCluster
+			}
+		}
 
-        $bearerToken = $global:Credentials.BearerToken
-        $clusterName = $global:Credentials.ClusterName
-        $portNumber = $global:Credentials.PortNumber
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
 
-        $TokenHeader = @{
-            Authorization = "Bearer $bearerToken"
-        }
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
 
-        # Password parameter checks and conversion for the required formats. 
-        if ($Password) {
-            $SecurePassword = $Password | ConvertTo-SecureString -AsPlainText -Force
-        }
-        else {
-            $SecurePassword = ${ClusterPassword}
-        }
+		# Password parameter checks and conversion for the required formats. 
+		if ($Password) {
+			$SecurePassword = $Password | ConvertTo-SecureString -AsPlainText -Force
+		}
+		else {
+			$SecurePassword = ${ClusterPassword}
+		}
 
-        # API Request Body
-        $body = @{
-            'name' = $Name
-            'gid' = $gid
-        }
+		# API Request Body
+		$body = @{
+			'name' = $Name
+			'gid' = $gid
+		}
 
-        Write-Debug($body| ConvertTo-Json -Depth 10)
+		Write-Debug ($body | ConvertTo-Json -Depth 10)
 
-        # API url definition
-        $url = "/v1/groups/"
+		# API url definition
+		$url = "/v1/groups/"
 
-        # API call run
-        try {
-            $response = Invoke-RestMethod -SkipCertificateCheck -Method 'POST' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
+		# API call run
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'POST' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
 
-            # Response
-            if ($Json) {
-                return @($response) | ConvertTo-Json -Depth 10
-            }
-            else {
-                return $response
-            }
-        }
-        catch {
-            $_.Exception.Response
-        }
-    }
-    catch {
-        $_.Exception.Response
-    }
+			# Response
+			if ($Json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $response
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
 }
 
 
@@ -356,79 +356,79 @@ function Delete-QQLocalGroup {
         Delete-QQLocalGroup -Id [ID] 
     #>
 
-    # CmdletBinding parameters
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $False)][switch]$Json,
-        [Parameter(Mandatory = $True,ParameterSetName = 'Name')] [string]$Name,
-        [Parameter(Mandatory = $True,ParameterSetName = 'Id')][string]$Id
-    )
-    if ($SkipCertificateCheck -eq 'true') {
-        $PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
-    }
+	# CmdletBinding parameters
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $False)] [switch]$Json,
+		[Parameter(Mandatory = $True,ParameterSetName = 'Name')] [string]$Name,
+		[Parameter(Mandatory = $True,ParameterSetName = 'Id')] [string]$Id
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
 
-    try {
-        # Existing BearerToken check
-        if (!$global:Credentials) {
-            Login-QQCluster
-        }
-        else {
-            if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
-                Login-QQCluster
-            }
-        }
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
+		}
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+				Login-QQCluster
+			}
+		}
 
-        $bearerToken = $global:Credentials.BearerToken
-        $clusterName = $global:Credentials.ClusterName
-        $portNumber = $global:Credentials.PortNumber
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
 
-        $TokenHeader = @{
-            Authorization = "Bearer $bearerToken"
-        }
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
 
-        # Password parameter checks and conversion for the required formats. 
-        if (!$Id) {
-            # API url definition
-            $url = "/v1/groups/"
+		# Password parameter checks and conversion for the required formats. 
+		if (!$Id) {
+			# API url definition
+			$url = "/v1/groups/"
 
-            # API call run
-            try {
-                $groups = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
-                
-                foreach ($group in $groups){
-                    if($group.name -eq $Name){
-                        $Id = $group.id
-                    }
-                }
-            
-            }
-            catch {
-                $_.Exception.Response
-            }
-        }
+			# API call run
+			try {
+				$groups = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+
+				foreach ($group in $groups) {
+					if ($group.Name -eq $Name) {
+						$Id = $group.id
+					}
+				}
+
+			}
+			catch {
+				$_.Exception.Response
+			}
+		}
 
 
-        # API url definition
-        $url = "/v1/groups/$Id"
+		# API url definition
+		$url = "/v1/groups/$Id"
 
-        # API call run
-        try {
-            $response = Invoke-RestMethod -SkipCertificateCheck -Method 'DELETE' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
-            # Response
-            return "Group was deleted succesfully."
-        }
-        catch {
-            $_.Exception.Response
-        }
-    }
-    catch {
-        $_.Exception.Response
-    }
+		# API call run
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'DELETE' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+			# Response
+			return "Group was deleted succesfully."
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
 }
 
 
 function Modify-QQLocalGroup {
-    <#
+<#
         .SYNOPSIS
             Modify a group
         .DESCRIPTION
@@ -445,115 +445,115 @@ function Modify-QQLocalGroup {
             Modify-QQLocalGroup -Name [GROUPNAME] -NewName [GROUPNAME] -Gid [GID]
             Modify-QQLocalGroup -Id [ID] -NewName [GROUPNAME] -Gid [GID]
         #>
-    
-        # CmdletBinding parameters
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $False)][switch]$Json,
-        [Parameter(Mandatory = $False)] [string]$NewName,
-        [Parameter(Mandatory = $False)] [string]$Gid,
-        [Parameter(Mandatory = $True,ParameterSetName = 'Name')] [string]$Name,
-        [Parameter(Mandatory = $True,ParameterSetName = 'Id')][string]$Id
-    )
-    if ($SkipCertificateCheck -eq 'true') {
-        $PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
-    }
 
-    try {
-        # Existing BearerToken check
-        if (!$global:Credentials) {
-            Login-QQCluster
-        }
-        else {
-            if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
-                Login-QQCluster
-            }
-        }
+	# CmdletBinding parameters
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $False)] [switch]$Json,
+		[Parameter(Mandatory = $False)] [string]$NewName,
+		[Parameter(Mandatory = $False)] [string]$Gid,
+		[Parameter(Mandatory = $True,ParameterSetName = 'Name')] [string]$Name,
+		[Parameter(Mandatory = $True,ParameterSetName = 'Id')] [string]$Id
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
 
-        $bearerToken = $global:Credentials.BearerToken
-        $clusterName = $global:Credentials.ClusterName
-        $portNumber = $global:Credentials.PortNumber
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
+		}
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+				Login-QQCluster
+			}
+		}
 
-        $TokenHeader = @{
-            Authorization = "Bearer $bearerToken"
-        }
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
 
-        # Password parameter checks and conversion for the required formats. 
-        if (!$Id) {
-            # API url definition
-            $url = "/v1/groups/"
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
 
-            # API call run
-            try {
-                $groups = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
-                
-                foreach ($group in $groups){
-                    if($group.name -eq $Name){
-                        $Id = $group.id
-                    }
-                }
-            
-            }
-            catch {
-                $_.Exception.Response
-            }
-        }
-        else{
-            # API url definition
-            $url = "/v1/groups/"
+		# Password parameter checks and conversion for the required formats. 
+		if (!$Id) {
+			# API url definition
+			$url = "/v1/groups/"
 
-            # API call run
-            try {
-                $groups = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
-                
-                foreach ($group in $groups){
-                    if($group.Id -eq $Id){
-                        $Name = $group.name
-                    }
-                }
-            
-            }
-            catch {
-                $_.Exception.Response
-            }
-        }
+			# API call run
+			try {
+				$groups = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
 
-        if(!$NewName){
-            $NewName = $Name
-        }
+				foreach ($group in $groups) {
+					if ($group.Name -eq $Name) {
+						$Id = $group.id
+					}
+				}
 
-        if($Gid -eq "none"){
-            $Gid = ''
-        }
+			}
+			catch {
+				$_.Exception.Response
+			}
+		}
+		else {
+			# API url definition
+			$url = "/v1/groups/"
 
-        # API request body
-        $body = @{
-            'id' = $Id
-            'name' = $NewName
-            'gid' = $Gid
-        }
+			# API call run
+			try {
+				$groups = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
 
-        Write-Debug($body| ConvertTo-Json -Depth 10)
+				foreach ($group in $groups) {
+					if ($group.id -eq $Id) {
+						$Name = $group.Name
+					}
+				}
 
-        # API url definition
-        $url = "/v1/groups/$Id"
+			}
+			catch {
+				$_.Exception.Response
+			}
+		}
 
-        # API call run
-        try {
-            $response = Invoke-RestMethod -SkipCertificateCheck -Method 'PUT' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
-            # Response
-            if ($Json) {
-                return @($response) | ConvertTo-Json -Depth 10
-            }
-            else {
-                return $response
-            }
-        }
-        catch {
-            $_.Exception.Response
-        }
-    }
-    catch {
-        $_.Exception.Response
-    }
+		if (!$NewName) {
+			$NewName = $Name
+		}
+
+		if ($Gid -eq "none") {
+			$Gid = ''
+		}
+
+		# API request body
+		$body = @{
+			'id' = $Id
+			'name' = $NewName
+			'gid' = $Gid
+		}
+
+		Write-Debug ($body | ConvertTo-Json -Depth 10)
+
+		# API url definition
+		$url = "/v1/groups/$Id"
+
+		# API call run
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'PUT' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
+			# Response
+			if ($Json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $response
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
 }

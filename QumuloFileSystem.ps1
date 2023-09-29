@@ -41,14 +41,14 @@ function Get-QQFSStatistics {
 
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $False)][switch]$Json
+		[Parameter(Mandatory = $False)] [switch]$Json
 	)
 	if ($SkipCertificateCheck -eq 'true') {
 		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
 	}
 
 	try {
-        # Existing BearerToken check
+		# Existing BearerToken check
 		if (!$global:Credentials) {
 			Login-QQCluster
 		}
@@ -66,14 +66,14 @@ function Get-QQFSStatistics {
 			Authorization = "Bearer $bearerToken"
 		}
 
-        # API url definition
+		# API url definition
 		$url = "/v1/file-system"
 
-        # API call ru
+		# API call ru
 		try {
 			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
 
-            # Response
+			# Response
 			if ($Json) {
 				return @($response) | ConvertTo-Json -Depth 10
 			}
@@ -102,7 +102,7 @@ function Get-QQFSPermissionSettings {
 
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $False)][switch]$Json
+		[Parameter(Mandatory = $False)] [switch]$Json
 	)
 	if ($SkipCertificateCheck -eq 'true') {
 		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
@@ -163,9 +163,9 @@ function Set-QQFSPermissionSettings {
 
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $True,ParameterSetName = "CrossProtocol")][switch]$CrossProtocol,
-		[Parameter(Mandatory = $True,ParameterSetName = "Native")][switch]$Native,
-		[Parameter(Mandatory = $False)][switch]$Json
+		[Parameter(Mandatory = $True,ParameterSetName = "CrossProtocol")] [switch]$CrossProtocol,
+		[Parameter(Mandatory = $True,ParameterSetName = "Native")] [switch]$Native,
+		[Parameter(Mandatory = $False)] [switch]$Json
 	)
 	if ($SkipCertificateCheck -eq 'true') {
 		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
@@ -194,11 +194,11 @@ function Set-QQFSPermissionSettings {
 		$url = "/v1/file-system/settings/permissions"
 
 		# API body definition
-		if($CrossProtocol){
-			$body = @{ mode = "CROSS_PROTOCOL"}
+		if ($CrossProtocol) {
+			$body = @{ Mode = "CROSS_PROTOCOL" }
 		}
-		elseif($Native){
-			$body = @{ mode = "NATIVE"}
+		elseif ($Native) {
+			$body = @{ Mode = "NATIVE" }
 		}
 
 		# API call ru
@@ -221,7 +221,7 @@ function Set-QQFSPermissionSettings {
 		$_.Exception.Response
 	}
 }
-	
+
 function Get-QQFSAtimeSettings {
 <#
 	.SYNOPSIS
@@ -234,7 +234,7 @@ function Get-QQFSAtimeSettings {
 
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $False)][switch]$Json
+		[Parameter(Mandatory = $False)] [switch]$Json
 	)
 	if ($SkipCertificateCheck -eq 'true') {
 		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
@@ -301,12 +301,12 @@ function Set-QQFSAtimeSettings {
 		Set-QQFSAtimeSettings [-Granularity][HOUR|DAY|WEEK][-Json]
 	#>
 
-	[CmdletBinding(DefaultParametersetName='None')]
+	[CmdletBinding(DefaultParameterSetName = 'None')]
 	param(
-		[Parameter(Mandatory = $False, ParameterSetName = "Enable")][switch]$Enable,
-		[Parameter(Mandatory = $False, ParameterSetName = "Disable")][switch]$Disable,
-		[Parameter(Mandatory = $False)][ValidateSet("Hour","Day","Week")][string]$Granularity,
-		[Parameter(Mandatory = $False)][switch]$Json
+		[Parameter(Mandatory = $False,ParameterSetName = "Enable")] [switch]$Enable,
+		[Parameter(Mandatory = $False,ParameterSetName = "Disable")] [switch]$Disable,
+		[Parameter(Mandatory = $False)][ValidateSet("Hour","Day","Week")] [string]$Granularity,
+		[Parameter(Mandatory = $False)] [switch]$Json
 	)
 	if ($SkipCertificateCheck -eq 'true') {
 		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
@@ -336,19 +336,179 @@ function Set-QQFSAtimeSettings {
 
 		# API body definition
 		$body = @{}
-		if($Enable){
+		if ($Enable) {
 			$body += @{ enabled = $True }
 		}
-		elseif($Disable){
+		elseif ($Disable) {
 			$body += @{ enabled = $False }
 		}
-		if($Granularity){
+		if ($Granularity) {
 			$body += @{ granularity = $Granularity.ToUpper() }
 		}
 
 		# API call ru
 		try {
 			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'PATCH' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
+
+			# Response
+			if ($Json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $response
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
+}
+
+
+function Get-QQFSNotifySettings {
+<#
+	.SYNOPSIS
+		Get FS notify settings.
+	.DESCRIPTION
+		Get FS notify related settings.
+	.EXAMPLE
+		Get-QQFSNotifySettings [-Json]
+	#>
+
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $False)] [switch]$Json
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
+
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
+		}
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+				Login-QQCluster
+			}
+		}
+
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
+
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
+
+		# API url definition
+		$url = "/v1/file-system/settings/notify"
+
+		# API call ru
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+
+			# Response
+			if ($Json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $response
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
+}
+
+function Set-QQFSNotifySettings {
+<#
+	.SYNOPSIS
+		Set FS notify settings
+	.DESCRIPTION
+		Set FS notify related settings.
+	.PARAMETER RecursiveMode [ENABLED, DISABLED_ERROR,DISABLED_IGNORE]
+		Notify recursive mode to set (ENABLED, DISABLED_ERROR,DISABLED_IGNORE)
+		Set FS notify settings
+		Change global FS settings for notify and change watch.
+
+		There is one setting for recursive mode. The use of recursive mode may have
+		performance impact for some workloads, so be default, recursive change watches
+		are disabled. These are the available modes:
+
+		DISABLED_ERROR
+		Recursive change notify requests will immediately return an error. This is
+		the default setting as it avoids the performance impact of recursive
+		notifications while clearly presenting errors when applications try to
+		initiate a recursive watch.
+
+		DISABLED_IGNORE
+		Recursive change notify requests will be accepted, but notifications will
+		only be sent for the top level directory being watched. In other words, it
+		will behave as if the recursive flag was not provided. This setting can be
+		used to improve compatibility with applications that request recursion but
+		don't actually depend on it. For some applications, however, this can cause
+		hangs or other unexpected behavior when recursion is needed in order to
+		function properly.
+
+		ENABLED
+		Real recursive change notify support. Notifications for all descendants of
+		the watched directory will be pushed to the watcher. It can be quite
+		expensive in term of performance. For example, consider that a watch on the
+		root of the file system will receive a notification for every single change
+		on the entire cluster.
+
+	.EXAMPLE
+		Set-QQFSNotifySettings RecursiveMode [ENABLED, DISABLED_ERROR,DISABLED_IGNORE][-Json]
+	#>
+
+	[CmdletBinding(DefaultParameterSetName = 'None')]
+	param(
+		[Parameter(Mandatory = $True)][ValidateSet("ENABLED","DISABLED_ERROR","DISABLED_IGNORE")] [string]$RecursiveMode,
+		[Parameter(Mandatory = $False)] [switch]$Json
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
+
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
+		}
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+				Login-QQCluster
+			}
+		}
+
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
+
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
+
+		# API url definition
+		$url = "/v1/file-system/settings/notify"
+
+		# API body definition
+		$body = @{
+			'recursive_mode' = $RecursiveMode.ToUpper()
+		}
+
+		# API call ru
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'PUT' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
 
 			# Response
 			if ($Json) {

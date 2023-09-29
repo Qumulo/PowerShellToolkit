@@ -1,4 +1,4 @@
-<#
+﻿<#
 	===========================================================================
 	Created by:   	berat.ulualan@qumulo.com
 	Organization: 	Qumulo, Inc.
@@ -48,7 +48,7 @@ function List-QQSMBShares {
 	# CmdletBinding parameters.
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $False)][switch]$Json
+		[Parameter(Mandatory = $False)] [switch]$Json
 	)
 	if ($SkipCertificateCheck -eq 'true') {
 		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
@@ -69,7 +69,7 @@ function List-QQSMBShares {
 		$clusterName = $global:Credentials.ClusterName
 		$portNumber = $global:Credentials.PortNumber
 
-		Write-Debug ($global:Credentials|ConvertTo-Json -Depth 10)
+		Write-Debug ($global:Credentials | ConvertTo-Json -Depth 10)
 
 		$TokenHeader = @{
 			Authorization = "Bearer $bearerToken"
@@ -121,8 +121,8 @@ function List-QQSMBShare {
 	# CmdletBinding parameters.
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $True,ParameterSetName = "Id")][string]$Id,
-		[Parameter(Mandatory = $True,ParameterSetName = "Name")][string]$Name,
+		[Parameter(Mandatory = $True,ParameterSetName = "Id")] [string]$Id,
+		[Parameter(Mandatory = $True,ParameterSetName = "Name")] [string]$Name,
 		[Parameter(Mandatory = $False)] [switch]$Json
 	)
 	if ($SkipCertificateCheck -eq 'true') {
@@ -144,7 +144,7 @@ function List-QQSMBShare {
 		$clusterName = $global:Credentials.ClusterName
 		$portNumber = $global:Credentials.PortNumber
 
-		Write-Debug ($global:Credentials|ConvertTo-Json -Depth 10)
+		Write-Debug ($global:Credentials | ConvertTo-Json -Depth 10)
 
 		$TokenHeader = @{
 			Authorization = "Bearer $bearerToken"
@@ -171,14 +171,14 @@ function List-QQSMBShare {
 		}
 		catch {
 			$_.Exception.Response
-			}
+		}
 	}
 	catch {
 		$_.Exception.Response
 	}
 }
 
-function Add-QQSMBShare{
+function Add-QQSMBShare {
 <#
     .SYNOPSIS
         Add a new SMB share
@@ -250,12 +250,12 @@ function Add-QQSMBShare{
 	# CmdletBinding parameters.
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $True)][string]$Name,
-		[Parameter(Mandatory = $True)][string]$fsPath,
-		[Parameter(Mandatory = $False)] [bool]$CreateFSPath=$False,
+		[Parameter(Mandatory = $True)] [string]$Name,
+		[Parameter(Mandatory = $True)] [string]$fsPath,
+		[Parameter(Mandatory = $False)] [bool]$CreateFSPath = $False,
 		[Parameter(Mandatory = $False)] [string]$Description,
-		[Parameter(Mandatory = $False)] [string]$DefaultFileCreateMode="0644",
-		[Parameter(Mandatory = $False)] [string]$DefaultDirCreateMode="0755",
+		[Parameter(Mandatory = $False)] [string]$DefaultFileCreateMode = "0644",
+		[Parameter(Mandatory = $False)] [string]$DefaultDirCreateMode = "0755",
 		[Parameter(Mandatory = $False)] [bool]$AccessBasedEnumaration = $False,
 		[Parameter(Mandatory = $False)] [bool]$Encryption = $False,
 		[Parameter(Mandatory = $False)] [switch]$NoAccess,
@@ -290,7 +290,7 @@ function Add-QQSMBShare{
 		$clusterName = $global:Credentials.ClusterName
 		$portNumber = $global:Credentials.PortNumber
 
-		Write-Debug ($global:Credentials|ConvertTo-Json -Depth 10)
+		Write-Debug ($global:Credentials | ConvertTo-Json -Depth 10)
 
 		$TokenHeader = @{
 			Authorization = "Bearer $bearerToken"
@@ -424,7 +424,7 @@ function Add-QQSMBShare{
 						$trusteeHash = @{ $trusteeArray[0] = $trusteeArray[1] }
 					}
 					else {
-						$trusteeHash = @{ name = $trustee }
+						$trusteeHash = @{ Name = $trustee }
 					}
 					$permissions += (
 						@{
@@ -524,8 +524,8 @@ function Add-QQSMBShare{
 			"require_encryption" = $Encryption
 		}
 
-		Write-Debug($body| ConvertTo-Json -Depth 10)
-		
+		Write-Debug ($body | ConvertTo-Json -Depth 10)
+
 		# API call run
 		try {
 			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'POST' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
@@ -568,8 +568,8 @@ function Delete-QQSMBShare {
 	# CmdletBinding parameters.
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $True,ParameterSetName = "Id")][string]$Id,
-		[Parameter(Mandatory = $True,ParameterSetName = "Name")][string]$Name
+		[Parameter(Mandatory = $True,ParameterSetName = "Id")] [string]$Id,
+		[Parameter(Mandatory = $True,ParameterSetName = "Name")] [string]$Name
 	)
 	if ($SkipCertificateCheck -eq 'true') {
 		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
@@ -590,7 +590,7 @@ function Delete-QQSMBShare {
 		$clusterName = $global:Credentials.ClusterName
 		$portNumber = $global:Credentials.PortNumber
 
-		Write-Debug ($global:Credentials|ConvertTo-Json -Depth 10)
+		Write-Debug ($global:Credentials | ConvertTo-Json -Depth 10)
 
 		$TokenHeader = @{
 			Authorization = "Bearer $bearerToken"
@@ -609,12 +609,8 @@ function Delete-QQSMBShare {
 			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'DELETE' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
 
 			# Response
-			if ($Json) {
-				return @($response) | ConvertTo-Json -Depth 10
-			}
-			else {
-				return $response
-			}
+			#  Response
+			return ("SMB share ($id) was deleted successfully.")
 		}
 		catch {
 			$_.Exception.Response
@@ -653,9 +649,9 @@ function Add-QQSMBSharePermission {
 	# CmdletBinding parameters.
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $True,ParameterSetName = "Id")][string]$Id,
-		[Parameter(Mandatory = $True,ParameterSetName = "Name")][string]$Name,
-		[Parameter(Mandatory = $True)][string]$Trustee,
+		[Parameter(Mandatory = $True,ParameterSetName = "Id")] [string]$Id,
+		[Parameter(Mandatory = $True,ParameterSetName = "Name")] [string]$Name,
+		[Parameter(Mandatory = $True)] [string]$Trustee,
 		[Parameter(Mandatory = $True)][ValidateSet("Allowed","Denied")] [string]$Type,
 		[Parameter(Mandatory = $True)][ValidateSet("None","Read","Write","Change_permissions","All")] [array]$Rights,
 		[Parameter(Mandatory = $False)] [switch]$Json
@@ -679,7 +675,7 @@ function Add-QQSMBSharePermission {
 		$clusterName = $global:Credentials.ClusterName
 		$portNumber = $global:Credentials.PortNumber
 
-		Write-Debug ($global:Credentials|ConvertTo-Json -Depth 10)
+		Write-Debug ($global:Credentials | ConvertTo-Json -Depth 10)
 
 		$TokenHeader = @{
 			Authorization = "Bearer $bearerToken"
@@ -691,17 +687,17 @@ function Add-QQSMBSharePermission {
 			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
 			$Id = $response.id
 
-			Write-Debug ($response| ConvertTo-Json -Depth 10)
+			Write-Debug ($response | ConvertTo-Json -Depth 10)
 		}
 
-	
+
 		try {
 			# API url definition
 			$url = "/v2/smb/shares/" + $Id + "?allow-fs-path-create=false"
-	
+
 			# API Request body
 			$permissions = $response.permissions
-			
+
 			# Trustee identification
 			if ($trustee.Contains(':'))
 			{
@@ -709,7 +705,7 @@ function Add-QQSMBSharePermission {
 				$trusteeHash = @{ $trusteeArray[0] = $trusteeArray[1] }
 			}
 			else {
-				$trusteeHash = @{ name = $trustee }
+				$trusteeHash = @{ Name = $trustee }
 			}
 
 			$newRights = @()
@@ -733,7 +729,7 @@ function Add-QQSMBSharePermission {
 			# API call run
 			try {
 				$response = Invoke-RestMethod -SkipCertificateCheck -Method 'PATCH' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
-				
+
 				# Response
 				if ($Json) {
 					return @($response) | ConvertTo-Json -Depth 10
@@ -787,9 +783,9 @@ function Remove-QQSMBSharePermission {
 	# CmdletBinding parameters.
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $True,ParameterSetName = "Id")][string]$Id,
-		[Parameter(Mandatory = $True,ParameterSetName = "Name")][string]$Name,
-		[Parameter(Mandatory = $True)][string]$Trustee,
+		[Parameter(Mandatory = $True,ParameterSetName = "Id")] [string]$Id,
+		[Parameter(Mandatory = $True,ParameterSetName = "Name")] [string]$Name,
+		[Parameter(Mandatory = $True)] [string]$Trustee,
 		[Parameter(Mandatory = $True)][ValidateSet("Allowed","Denied")] [string]$Type,
 		[Parameter(Mandatory = $True)][ValidateSet("None","Read","Write","Change_permissions","All")] [array]$Rights,
 		[Parameter(Mandatory = $False)] [switch]$Json
@@ -813,7 +809,7 @@ function Remove-QQSMBSharePermission {
 		$clusterName = $global:Credentials.ClusterName
 		$portNumber = $global:Credentials.PortNumber
 
-		Write-Debug ($global:Credentials|ConvertTo-Json -Depth 10)
+		Write-Debug ($global:Credentials | ConvertTo-Json -Depth 10)
 
 		$TokenHeader = @{
 			Authorization = "Bearer $bearerToken"
@@ -825,7 +821,7 @@ function Remove-QQSMBSharePermission {
 			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
 			$Id = $response.id
 
-			Write-Debug ($response| ConvertTo-Json -Depth 10)
+			Write-Debug ($response | ConvertTo-Json -Depth 10)
 		}
 
 		try {
@@ -848,7 +844,7 @@ function Remove-QQSMBSharePermission {
 					if ($permission.trustee.Name -eq $trustee) {
 						$trusteeCheck = $true
 					}
-					else{
+					else {
 						$trusteeCheck = $false
 					}
 				}
@@ -862,25 +858,25 @@ function Remove-QQSMBSharePermission {
 				if (!$compareRights) {
 					$rightsCheck = $true
 				}
-				else{
+				else {
 					$rightsCheck = $false
-				} 
+				}
 
 				if ($permission.type -eq $Type.ToUpper()) {
 					$typeCheck = $true
 				}
-				else{
+				else {
 					$typeCheck = $false
 				}
 
-				Write-Verbose($trusteeCheck| ConvertTo-Json -Depth 10)
+				Write-Verbose ($trusteeCheck | ConvertTo-Json -Depth 10)
 				if (($trusteeCheck -ne $true) -or ($rightsCheck -ne $true) -or ($typeCheck -ne $true))
 				{
 					$newPermissions += $permission
 				}
 			}
-			
-			
+
+
 			# API request body	
 			$body = @{
 				"permissions" = $newPermissions
@@ -891,10 +887,10 @@ function Remove-QQSMBSharePermission {
 			# API call run
 			try {
 				$response = Invoke-RestMethod -SkipCertificateCheck -Method 'PATCH' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
-				
+
 				# Response
-				$comparePermissions = Compare-Object  $permissions $newPermissions
-				if($comparePermissions)
+				$comparePermissions = Compare-Object $permissions $newPermissions
+				if ($comparePermissions)
 				{
 					if ($Json) {
 						return @($response) | ConvertTo-Json -Depth 10
@@ -903,10 +899,10 @@ function Remove-QQSMBSharePermission {
 						return $response
 					}
 				}
-				else{
+				else {
 					Write-Host "No matched entry!"
 				}
-				
+
 			}
 			catch {
 				$_.Exception.Response
@@ -961,7 +957,7 @@ function Get-QQSMBSettings {
 		$clusterName = $global:Credentials.ClusterName
 		$portNumber = $global:Credentials.PortNumber
 
-		Write-Debug ($global:Credentials|ConvertTo-Json -Depth 10)
+		Write-Debug ($global:Credentials | ConvertTo-Json -Depth 10)
 
 		$TokenHeader = @{
 			Authorization = "Bearer $bearerToken"
@@ -1065,7 +1061,7 @@ function Modify-QQSMBSettings {
 		$clusterName = $global:Credentials.ClusterName
 		$portNumber = $global:Credentials.PortNumber
 
-		Write-Debug ($global:Credentials|ConvertTo-Json -Depth 10)
+		Write-Debug ($global:Credentials | ConvertTo-Json -Depth 10)
 
 		$TokenHeader = @{
 			Authorization = "Bearer $bearerToken"
@@ -1172,10 +1168,10 @@ function List-QQSMBFileHandles {
 	# CmdletBinding parameters
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $False)][string]$Path,
-		[Parameter(Mandatory = $False)][string]$FileNumber,
-		[Parameter(Mandatory = $False)][string]$PageSize,
-		[Parameter(Mandatory = $False)] [bool]$ResolvePaths=$False,
+		[Parameter(Mandatory = $False)] [string]$Path,
+		[Parameter(Mandatory = $False)] [string]$FileNumber,
+		[Parameter(Mandatory = $False)] [string]$PageSize,
+		[Parameter(Mandatory = $False)] [bool]$ResolvePaths = $False,
 		[Parameter(Mandatory = $False)] [switch]$Json
 	)
 	if ($SkipCertificateCheck -eq 'true') {
@@ -1217,25 +1213,25 @@ function List-QQSMBFileHandles {
 		}
 
 		# API url definition
-		if($Path){
+		if ($Path) {
 			$url = "/v1/smb/files/?file_number=$id&"
 		}
 		else {
-			if($FileNumber){
+			if ($FileNumber) {
 				$url = "/v1/smb/files/?file_number=$FileNumber&"
 			}
 			else {
 				$url = "/v1/smb/files/?"
 			}
-		}	
-		if($ResolvePaths){
+		}
+		if ($ResolvePaths) {
 			$url += "resolve_paths=True"
 		}
 		else {
 			$url += "resolve_path=False"
 		}
 
-		if($PageSize) {
+		if ($PageSize) {
 			$url += "&limit=$PageSize"
 		}
 
@@ -1262,7 +1258,7 @@ function List-QQSMBFileHandles {
 }
 
 function Close-QQSMBFileHandles {
-	<#
+<#
 		.SYNOPSIS
 			Force close a specified SMB file handle
 		.DESCRIPTION
@@ -1279,73 +1275,73 @@ function Close-QQSMBFileHandles {
 		.LINK
 			https://care.qumulo.com/hc/en-us/articles/360044728593-Close-an-Open-SMB-File-via-QQ-CLI
 		#>
-	
-		# CmdletBinding parameters
-		[CmdletBinding()]
-		param(
-			[Parameter(Mandatory = $True)][ValidateNotNullOrEmpty()] [string]$Location,
-			[Parameter(Mandatory = $False)] [switch]$Json
-		)
-		if ($SkipCertificateCheck -eq 'true') {
-			$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+
+	# CmdletBinding parameters
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $True)][ValidateNotNullOrEmpty()] [string]$Location,
+		[Parameter(Mandatory = $False)] [switch]$Json
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
+
+	# Existing BearerToken check
+	try {
+		if (!$global:Credentials) {
+			Login-QQCluster
 		}
-	
-		# Existing BearerToken check
-		try {
-			if (!$global:Credentials) {
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
 				Login-QQCluster
 			}
+		}
+
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
+
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
+
+		# API Request body
+		$body = @()
+		$body += (
+			@{
+				'file_number' = 0
+				'handle_info' = @{
+					'owner' = '0'
+					'access_mask' = @('MS_ACCESS_FILE_READ_ATTRIBUTES')
+					'version' = 0
+					'location' = $Location
+					'num_byte_range_locks' = 0
+				}
+			}
+		)
+
+		$bodyJson = $body | ConvertTo-Json -Depth 10
+
+		Write-Debug ($body | ConvertTo-Json -Depth 10)
+
+		# API url definition
+		$url = "/v1/smb/files/close"
+
+		# API call run
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'POST' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ("[" + $bodyJson + "]") -TimeoutSec 60 -ErrorAction:Stop
+
+			# Response
+			if ($Json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
 			else {
-				if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
-					Login-QQCluster
-				}
+				return $response
 			}
-	
-			$bearerToken = $global:Credentials.BearerToken
-			$clusterName = $global:Credentials.ClusterName
-			$portNumber = $global:Credentials.PortNumber
-	
-			$TokenHeader = @{
-				Authorization = "Bearer $bearerToken"
-			}
-	
-			# API Request body
-			$body = @()
-			$body += ( 
-					@{
-					'file_number'=0
-					'handle_info'= @{
-						'owner'='0'
-						'access_mask'=@('MS_ACCESS_FILE_READ_ATTRIBUTES') 
-						'version'= 0
-						'location'=$Location
-						'num_byte_range_locks'=0
-					}
-				}
-			)
-
-			$bodyJson = $body | ConvertTo-Json -Depth 10
-
-			Write-Debug($body| ConvertTo-Json -Depth 10)
-
-			# API url definition
-			$url = "/v1/smb/files/close"
-
-			# API call run
-			try {
-				$response = Invoke-RestMethod -SkipCertificateCheck -Method 'POST' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ("["+$bodyJson+"]") -TimeoutSec 60 -ErrorAction:Stop
-
-				# Response
-				if ($Json) {
-					return @($response) | ConvertTo-Json -Depth 10
-				}
-				else {
-					return $response
-				}
-			}
-			catch {
-				$_.Exception.Response
-			}
+		}
+		catch {
+			$_.Exception.Response
+		}
 
 		else {
 			return ("Missing parameter!")
@@ -1355,7 +1351,7 @@ function Close-QQSMBFileHandles {
 		$_.Exception.Response
 	}
 }
-	
+
 function List-QQSMBSessions {
 <#
 	.SYNOPSIS
@@ -1376,8 +1372,8 @@ function List-QQSMBSessions {
 	# CmdletBinding parameters
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $False)][string]$Identity,
-		[Parameter(Mandatory = $False)][string]$PageSize,
+		[Parameter(Mandatory = $False)] [string]$Identity,
+		[Parameter(Mandatory = $False)] [string]$PageSize,
 		[Parameter(Mandatory = $False)] [switch]$Json
 	)
 	if ($SkipCertificateCheck -eq 'true') {
@@ -1407,21 +1403,21 @@ function List-QQSMBSessions {
 		$url = "/v1/smb/sessions/"
 
 
-		if(($PageSize) -And ($Identity)){
+		if (($PageSize) -and ($Identity)) {
 			$htmlIdentity = ([uri]::EscapeDataString($Identity))
 			$url += "?limit=$PageSize&?identity=$htmlIdentity"
 		}
-		else{
-			if($PageSize) {
+		else {
+			if ($PageSize) {
 				$url += "?limit=$PageSize"
 			}
 
-			if($Identity){
+			if ($Identity) {
 				$htmlIdentity = ([uri]::EscapeDataString($Identity))
 				$url += "?identity=$htmlIdentity"
 			}
 		}
-		
+
 
 		# API call run	
 		try {
@@ -1446,7 +1442,7 @@ function List-QQSMBSessions {
 }
 
 function Close-QQSMBSessions {
-	<#
+<#
 		.SYNOPSIS
 			Force close SMB sessions matching one or more of a set of filters.
 
@@ -1469,123 +1465,123 @@ function Close-QQSMBSessions {
 		.LINK
 			https://care.qumulo.com/hc/en-us/articles/360046854394-Close-an-Open-SMB-Session
 		#>
-	
-		# CmdletBinding parameters
-		[CmdletBinding()]
-		param(
-			[Parameter(Mandatory = $False)][string]$Location,
-			[Parameter(Mandatory = $False)][string]$Identity,
-			[Parameter(Mandatory = $False)][string]$Ip,
-			[Parameter(Mandatory = $False)] [switch]$Json
-		)
-		if ($SkipCertificateCheck -eq 'true') {
-			$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+
+	# CmdletBinding parameters
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $False)] [string]$Location,
+		[Parameter(Mandatory = $False)] [string]$Identity,
+		[Parameter(Mandatory = $False)] [string]$Ip,
+		[Parameter(Mandatory = $False)] [switch]$Json
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
+
+	# Existing BearerToken check
+	try {
+		if (!$global:Credentials) {
+			Login-QQCluster
 		}
-	
-		# Existing BearerToken check
-		try {
-			if (!$global:Credentials) {
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
 				Login-QQCluster
 			}
-			else {
-				if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
-					Login-QQCluster
-				}
-			}
-	
-			$bearerToken = $global:Credentials.BearerToken
-			$clusterName = $global:Credentials.ClusterName
-			$portNumber = $global:Credentials.PortNumber
-	
-			$TokenHeader = @{
-				Authorization = "Bearer $bearerToken"
-			}
+		}
+
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
+
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
 
 
-			$url = "/v1/smb/sessions/"
-			if($Identity){
-				$htmlIdentity = ([uri]::EscapeDataString($Identity))
-				$url += "?identity=$htmlIdentity"
-			}
-			try {
-				$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
-				$sessions = $response.session_infos
-			}
-			catch {
-				$_.Exception.Response
-			}
-	
-			# API Request body
-			 
-			$matchedSessions1 = @()
-			$matchedSessions2 = @()
-			$matchedSessions3 = @()
+		$url = "/v1/smb/sessions/"
+		if ($Identity) {
+			$htmlIdentity = ([uri]::EscapeDataString($Identity))
+			$url += "?identity=$htmlIdentity"
+		}
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+			$sessions = $response.session_infos
+		}
+		catch {
+			$_.Exception.Response
+		}
 
-			foreach ($session in $sessions){
-				if($Ip){
-					if ($session.originator -eq $Ip) {
-						$matchedSessions1 += $session
-					}
-				}
-				else{
+		# API Request body
+
+		$matchedSessions1 = @()
+		$matchedSessions2 = @()
+		$matchedSessions3 = @()
+
+		foreach ($session in $sessions) {
+			if ($Ip) {
+				if ($session.originator -eq $Ip) {
 					$matchedSessions1 += $session
-				}    
-			}
-
-			foreach ($matchedSession1 in $matchedSessions1){
-				if($Location){
-					if ($matchedSession1.location -eq $Location) {
-						$matchedSessions2 += $matchedSession1
-					}
-				}
-				else{
-					$matchedSessions2 += $matchedSession1    
 				}
 			}
-			# Write-Debug("Matched Sessions2:")
-			# Write-Debug($matchedSessions2 | ConvertTo-Json -Depth 10)
+			else {
+				$matchedSessions1 += $session
+			}
+		}
 
-			foreach ($matchedSession2 in $matchedSessions2){
-				if($Identity){
-					$userCheck = $matchedSession2.user
-					if ($userCheck.ContainsValue($Identity)){
-						$matchedSessions3 += $matchedSession2
-						Write-Debug($Identity)
-					}
-				}
-				else{
-					# $userCheck = $matchedSession2.user
-					# Write-Debug($userCheck | ConvertTo-Json -Depth 10)
-					$matchedSessions3 += $matchedSession2 
-				}
-			} 
-			# Write-Debug("Matched Sessions3:")
-			# Write-Debug($matchedSessions3 | ConvertTo-Json -Depth 10)
-
-			
-			$body = $matchedSessions3
-			
-			$bodyJson = $body | ConvertTo-Json -Depth 10
-			Write-Debug($body | ConvertTo-Json -Depth 10)
-
-			# API url definition
-			$url = "/v1/smb/sessions/close"
-
-			# API call run
-			try {
-				$response = Invoke-RestMethod -SkipCertificateCheck -Method 'POST' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ("["+$bodyJson+"]") -TimeoutSec 60 -ErrorAction:Stop
-
-				# Response
-				if ($Json) {
-					return @($response) | ConvertTo-Json -Depth 10
-				}
-				else {
-					return $response
+		foreach ($matchedSession1 in $matchedSessions1) {
+			if ($Location) {
+				if ($matchedSession1.location -eq $Location) {
+					$matchedSessions2 += $matchedSession1
 				}
 			}
-			catch {
-				$_.Exception.Response
+			else {
+				$matchedSessions2 += $matchedSession1
 			}
+		}
+		# Write-Debug("Matched Sessions2:")
+		# Write-Debug($matchedSessions2 | ConvertTo-Json -Depth 10)
+
+		foreach ($matchedSession2 in $matchedSessions2) {
+			if ($Identity) {
+				$userCheck = $matchedSession2.User
+				if ($userCheck.ContainsValue($Identity)) {
+					$matchedSessions3 += $matchedSession2
+					Write-Debug ($Identity)
+				}
+			}
+			else {
+				# $userCheck = $matchedSession2.user
+				# Write-Debug($userCheck | ConvertTo-Json -Depth 10)
+				$matchedSessions3 += $matchedSession2
+			}
+		}
+		# Write-Debug("Matched Sessions3:")
+		# Write-Debug($matchedSessions3 | ConvertTo-Json -Depth 10)
+
+
+		$body = $matchedSessions3
+
+		$bodyJson = $body | ConvertTo-Json -Depth 10
+		Write-Debug ($body | ConvertTo-Json -Depth 10)
+
+		# API url definition
+		$url = "/v1/smb/sessions/close"
+
+		# API call run
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'POST' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ("[" + $bodyJson + "]") -TimeoutSec 60 -ErrorAction:Stop
+
+			# Response
+			if ($Json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $response
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
 
 		else {
 			return ("Missing parameter!")

@@ -41,18 +41,18 @@ function List-QQNetworks {
         https://care.qumulo.com/hc/en-us/articles/115007237948-Connect-to-Multiple-Networks-in-Qumulo-Core
     #>
 
-    # CmdletBinding parameters
+	# CmdletBinding parameters
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $False)][switch]$Json,
-        [Parameter(Mandatory = $False)][string]$InterfaceID=1
+		[Parameter(Mandatory = $False)] [switch]$Json,
+		[Parameter(Mandatory = $False)] [string]$InterfaceID = 1
 	)
 	if ($SkipCertificateCheck -eq 'true') {
 		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
 	}
 
 	try {
-        # Existing BearerToken check
+		# Existing BearerToken check
 		if (!$global:Credentials) {
 			Login-QQCluster
 		}
@@ -70,14 +70,14 @@ function List-QQNetworks {
 			Authorization = "Bearer $bearerToken"
 		}
 
-        # API url definition
+		# API url definition
 		$url = "/v2/network/interfaces/$InterfaceID/networks/"
 
-        # API call run	
+		# API call run	
 		try {
 			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
 
-            # Response
+			# Response
 			if ($json) {
 				return @($response) | ConvertTo-Json -Depth 10
 			}
@@ -111,59 +111,59 @@ function Get-QQNetwork {
         https://care.qumulo.com/hc/en-us/articles/115007237948-Connect-to-Multiple-Networks-in-Qumulo-Core
     #>
 
-    # CmdletBinding parameters
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $False)][switch]$Json,
-        [Parameter(Mandatory = $False)][string]$InterfaceID="1",
-        [Parameter(Mandatory = $True)][string]$NetworkID
-    )
+	# CmdletBinding parameters
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $False)] [switch]$Json,
+		[Parameter(Mandatory = $False)] [string]$InterfaceID = "1",
+		[Parameter(Mandatory = $True)] [string]$NetworkID
+	)
 
-    if ($SkipCertificateCheck -eq 'true') {
-        $PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
-    }
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
 
-    try {
-        # Existing BearerToken check
-        if (!$global:Credentials) {
-            Login-QQCluster
-        }
-        else {
-            if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
-                Login-QQCluster
-            }
-        }
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
+		}
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+				Login-QQCluster
+			}
+		}
 
-        $bearerToken = $global:Credentials.BearerToken
-        $clusterName = $global:Credentials.ClusterName
-        $portNumber = $global:Credentials.PortNumber
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
 
-        $TokenHeader = @{
-            Authorization = "Bearer $bearerToken"
-        }
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
 
-        # API url definition
-        $url = "/v2/network/interfaces/$interfaceID/networks/$networkID"
+		# API url definition
+		$url = "/v2/network/interfaces/$interfaceID/networks/$networkID"
 
-        # API call run
-        try {
-            $response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+		# API call run
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
 
-            # Response
-            if ($json) {
-                return @($response) | ConvertTo-Json -Depth 10
-            }
-            else {
-                return $response
-            }
-        }
-        catch {
-            $_.Exception.Response
-        }
-    }
-    catch {
-        $_.Exception.Response
-    }
+			# Response
+			if ($json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $response
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
 }
 
 function Add-QQNetwork {
@@ -190,93 +190,98 @@ function Add-QQNetwork {
         The Maximum Transfer Unit (MTU) in bytes of a tagged STATIC network. The MTU of an untagged STATIC network needs to be specified through interface MTU.
     .PARAMETER VlanID (if STATIC) 
         User assigned VLAN tag for network configuration. 1-4094 are valid VLAN IDs and 0 is used for untagged networks.
+    .PARAMETER TenantID (if STATIC) 
+        The tenant that the network will be assigned to. If only one tenant exists, the network will default to that tenant. Otherwise, not
+        specifying the tenant will create the network unassigned.
     .EXAMPLE
-        Add-QQNetwork -Name [NAME] -Netmask [SUBNET_MASK] -IpRange [LIST_OF_IPS] -FloatingIpRanges [LIST_OF_IPS] -DnsServers [LIST_OF_DNS_SERVER] -DnsSearchDomains [DOMAIN_NAME] -Mtu [1500|9000] -VlanID [0-4094] 
+        Add-QQNetwork -Name [NAME] -Netmask [SUBNET_MASK] -IpRange [LIST_OF_IPS] -FloatingIpRanges [LIST_OF_IPS] -DnsServers [LIST_OF_DNS_SERVER] -DnsSearchDomains [DOMAIN_NAME] -Mtu [1500|9000] -VlanID [0-4094] -TenantID 1
     .LINK
         https://care.qumulo.com/hc/en-us/articles/115007237948-Connect-to-Multiple-Networks-in-Qumulo-Core
     #>
 
-    # CmdletBinding parameters
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $False)][switch]$Json,
-        [Parameter(Mandatory = $False)][string]$InferfaceID="1",
-        [Parameter(Mandatory = $True)][string]$Name,
-        [Parameter(Mandatory = $True)][string]$Netmask,
-        [Parameter(Mandatory = $True)][array]$IpRanges,
-        [Parameter(Mandatory = $False)][array]$FloatingIpRanges,
-        [Parameter(Mandatory = $False)][array]$DnsServers,
-        [Parameter(Mandatory = $False)][array]$DnsSearchDomains,
-        [Parameter(Mandatory = $True)][int16]$MTU,
-        [Parameter(Mandatory = $True)][int16]$VlanID
-    )
+	# CmdletBinding parameters
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $False)] [switch]$Json,
+		[Parameter(Mandatory = $False)] [string]$InferfaceID = "1",
+		[Parameter(Mandatory = $True)] [string]$Name,
+		[Parameter(Mandatory = $True)] [string]$Netmask,
+		[Parameter(Mandatory = $True)] [array]$IpRanges,
+		[Parameter(Mandatory = $False)] [array]$FloatingIpRanges,
+		[Parameter(Mandatory = $False)] [array]$DnsServers,
+		[Parameter(Mandatory = $False)] [array]$DnsSearchDomains,
+		[Parameter(Mandatory = $True)] [int16]$MTU,
+		[Parameter(Mandatory = $True)] [int16]$VlanID,
+		[Parameter(Mandatory = $False)] [int16]$TenantID = "1"
+	)
 
-    if ($SkipCertificateCheck -eq 'true') {
-        $PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
-    }
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
 
-    try {
-        # Existing BearerToken check
-        if (!$global:Credentials) {
-            Login-QQCluster
-        }
-        else {
-            if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
-                Login-QQCluster
-            }
-        }
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
+		}
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+				Login-QQCluster
+			}
+		}
 
-        $bearerToken = $global:Credentials.BearerToken
-        $clusterName = $global:Credentials.ClusterName
-        $portNumber = $global:Credentials.PortNumber
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
 
-        $TokenHeader = @{
-            Authorization = "Bearer $bearerToken"
-        }
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
 
-        # API Request Body
-        if(!$DnsSearchDomains){$DnsSearchDomains = @()}
-        if(!$FloatingIpRanges){$FloatingIpRanges = @()}
-        if(!$DnsServers){$DnsServers = @()}
-        $body = @{
-            "floating_ip_ranges" = $FloatingIpRanges
-            "dns_search_domains" = $DnsSearchDomains
-            "mtu" = $Mtu
-            "netmask" = $Netmask 
-            "vlan_id" = $VlanID 
-            "name" = $Name
-            "assigned_by" = "STATIC" 
-            "ip_ranges" = $IpRanges 
-            "dns_servers" = $DnsServers
-        }
+		# API Request Body
+		if (!$DnsSearchDomains) { $DnsSearchDomains = @() }
+		if (!$FloatingIpRanges) { $FloatingIpRanges = @() }
+		if (!$DnsServers) { $DnsServers = @() }
+		$body = @{
+			"floating_ip_ranges" = $FloatingIpRanges
+			"dns_search_domains" = $DnsSearchDomains
+			"mtu" = $Mtu
+			"netmask" = $Netmask
+			"vlan_id" = $VlanID
+			"name" = $Name
+			"assigned_by" = "STATIC"
+			"ip_ranges" = $IpRanges
+			"dns_servers" = $DnsServers
+			"tenant_id" = $TenantID
+		}
 
-        Write-Debug($body| ConvertTo-Json -Depth 10)
+		Write-Debug ($body | ConvertTo-Json -Depth 10)
 
-        # API call run
-        $url = "/v2/network/interfaces/$InterfaceID/networks/"
-        
-        # API call run	
-        try {
-            $response = Invoke-RestMethod -SkipCertificateCheck -Method 'POST' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
+		# API call run
+		$url = "/v2/network/interfaces/$InferfaceID/networks/"
 
-            # Response (Existing network configurations)
-            $url = "/v2/network/interfaces/$InterfaceID/networks/"
-            $DetailedResponse = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+		# API call run	
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'POST' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
 
-            if ($json) {
-                return @($DetailedResponse) | ConvertTo-Json -Depth 10
-            }
-            else {
-                return $DetailedResponse
-            }
-        }
-        catch {
-            $_.Exception.Response
-        }
-    }
-    catch {
-        $_.Exception.Response
-    }
+			# Response (Existing network configurations)
+			$url = "/v2/network/interfaces/$InferfaceID/networks/"
+			$DetailedResponse = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+
+			if ($json) {
+				return @($DetailedResponse) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $DetailedResponse
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
 }
 
 function Delete-QQNetwork {
@@ -292,60 +297,60 @@ function Delete-QQNetwork {
     .LINK
         https://care.qumulo.com/hc/en-us/articles/115007237948-Connect-to-Multiple-Networks-in-Qumulo-Core
     #>
-    # CmdletBinding parameters
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $False)][switch]$Json,
-        [Parameter(Mandatory = $True)][string]$NetworkID
-    )
-    if ($SkipCertificateCheck -eq 'true') {
-        $PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
-    }
+	# CmdletBinding parameters
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $False)] [switch]$Json,
+		[Parameter(Mandatory = $True)] [string]$NetworkID
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
 
-    try {
-        # Existing BearerToken check
-        if (!$global:Credentials) {
-            Login-QQCluster
-        }
-        else {
-            if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
-                Login-QQCluster
-            }
-        }
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
+		}
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+				Login-QQCluster
+			}
+		}
 
-        $bearerToken = $global:Credentials.BearerToken
-        $clusterName = $global:Credentials.ClusterName
-        $portNumber = $global:Credentials.PortNumber
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
 
-        $TokenHeader = @{
-            Authorization = "Bearer $bearerToken"
-        }
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
 
-        # API url definition
-        $url = "/v2/network/interfaces/1/networks/$NetworkID"
-        
-        # API call run
-        try {
-            $response = Invoke-RestMethod -SkipCertificateCheck -Method 'DELETE' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+		# API url definition
+		$url = "/v2/network/interfaces/1/networks/$NetworkID"
 
-            # Response (Existing network configurations)
-            $url = "/v2/network/interfaces/1/networks/"
-            $DetailedResponse = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+		# API call run
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'DELETE' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
 
-            if ($json) {
-                return @($DetailedResponse) | ConvertTo-Json -Depth 10
-            }
-            else {
-                return $DetailedResponse
-            }
-        }
-        catch {
-            $_.Exception.Response
-        }
-    }
-    catch {
-        $_.Exception.Response
-    }
+			# Response (Existing network configurations)
+			$url = "/v2/network/interfaces/1/networks/"
+			$DetailedResponse = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+
+			if ($json) {
+				return @($DetailedResponse) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $DetailedResponse
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
 }
 
 function Modify-QQNetwork {
@@ -380,85 +385,87 @@ function Modify-QQNetwork {
         https://care.qumulo.com/hc/en-us/articles/115007237948-Connect-to-Multiple-Networks-in-Qumulo-Core
     #>
 
-    # CmdletBinding parameters
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $False)][switch]$Json,
-        [Parameter(Mandatory = $True)][string]$NetworkID,
-        [Parameter(Mandatory = $False)][string]$Name,
-        [Parameter(Mandatory = $False)][string]$Netmask,
-        [Parameter(Mandatory = $False)][array]$IpRanges,
-        [Parameter(Mandatory = $False)][array]$FloatingIpRanges,
-        [Parameter(Mandatory = $False)][array]$DnsServers,
-        [Parameter(Mandatory = $False)][array]$DnsSearchDomains,
-        [Parameter(Mandatory = $False)][int16]$MTU,
-        [Parameter(Mandatory = $False)][int16]$VlanID
-    )
+	# CmdletBinding parameters
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $False)] [switch]$Json,
+		[Parameter(Mandatory = $True)] [string]$NetworkID,
+		[Parameter(Mandatory = $False)] [string]$Name,
+		[Parameter(Mandatory = $False)] [string]$Netmask,
+		[Parameter(Mandatory = $False)] [array]$IpRanges,
+		[Parameter(Mandatory = $False)] [array]$FloatingIpRanges,
+		[Parameter(Mandatory = $False)] [array]$DnsServers,
+		[Parameter(Mandatory = $False)] [array]$DnsSearchDomains,
+		[Parameter(Mandatory = $False)] [int16]$MTU,
+		[Parameter(Mandatory = $False)] [int16]$VlanID,
+		[Parameter(Mandatory = $False)] [int16]$TenantID
+	)
 
-    if ($SkipCertificateCheck -eq 'true') {
-        $PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
-    }
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
 
-    try {
-        # Existing BearerToken check
-        if (!$global:Credentials) {
-            Login-QQCluster
-        }
-        else {
-            if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
-                Login-QQCluster
-            }
-        }
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
+		}
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+				Login-QQCluster
+			}
+		}
 
-        $bearerToken = $global:Credentials.BearerToken
-        $clusterName = $global:Credentials.ClusterName
-        $portNumber = $global:Credentials.PortNumber
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
 
-        $TokenHeader = @{
-            Authorization = "Bearer $bearerToken"
-        }
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
 
-        # API Request Body
-        $body = @{
-            "id" = [int16]$networkID
-        }
+		# API Request Body
+		$body = @{
+			"id" = [int16]$networkID
+		}
 
-        if($Name){ $body += @{"name" = $Name}}
-        if($Netmask){ $body += @{"netmask" = $Netmask}}
-        if($IpRanges){ $body += @{"ip_ranges" = $IpRanges}}
-        if($FloatingIpRanges){ $body += @{"floating_ip_ranges" = $FloatingIpRanges}}
-        if($DnsServers){ $body += @{"dns_servers" = $DnsServers}}
-        if($DnsSearchDomains){ $body += @{"dns_search_domains" = $DnsSearchDomains}}
-        if($MTU){ $body += @{"mtu" = $MTU}}
-        if($VlanID){ $body += @{"vlan_id" = $VlanID}}
+		if ($Name) { $body += @{ "name" = $Name } }
+		if ($Netmask) { $body += @{ "netmask" = $Netmask } }
+		if ($IpRanges) { $body += @{ "ip_ranges" = $IpRanges } }
+		if ($FloatingIpRanges) { $body += @{ "floating_ip_ranges" = $FloatingIpRanges } }
+		if ($DnsServers) { $body += @{ "dns_servers" = $DnsServers } }
+		if ($DnsSearchDomains) { $body += @{ "dns_search_domains" = $DnsSearchDomains } }
+		if ($MTU) { $body += @{ "mtu" = $MTU } }
+		if ($VlanID) { $body += @{ "vlan_id" = $VlanID } }
+		if ($TenantID) { $body += @{ "tenant_id" = $TenantID } }
 
-        Write-Debug($body| ConvertTo-Json -Depth 10)
+		Write-Debug ($body | ConvertTo-Json -Depth 10)
 
-        # API url definition
-        $url = "/v2/network/interfaces/1/networks/$NetworkID"
-        
-        # API call run	
-        try {
-            $response = Invoke-RestMethod -SkipCertificateCheck -Method 'PATCH' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
+		# API url definition
+		$url = "/v2/network/interfaces/1/networks/$NetworkID"
 
-            # Response (Existing network configurations)
-            $url = "/v2/network/interfaces/1/networks/"
-            $DetailedResponse= Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+		# API call run	
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'PATCH' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
 
-            if ($json) {
-                return @($DetailedResponse) | ConvertTo-Json -Depth 10
-            }
-            else {
-                return $DetailedResponse
-            }
-        }
-        catch {
-            $_.Exception.Response
-        }
-    }
-    catch {
-        $_.Exception.Response
-    }
+			# Response (Existing network configurations)
+			$url = "/v2/network/interfaces/1/networks/"
+			$DetailedResponse = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+
+			if ($json) {
+				return @($DetailedResponse) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $DetailedResponse
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
 }
 
 function List-QQConnections {
@@ -473,56 +480,56 @@ function List-QQConnections {
         https://care.qumulo.com/hc/en-us/articles/115009003427--Balance-of-Client-Connections-on-your-Qumulo-Cluster-#details-0-2
     #>
 
-    # CmdletBinding parameters
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $False)][switch]$Json
-    )
-    if ($SkipCertificateCheck -eq 'true') {
-        $PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
-    }
+	# CmdletBinding parameters
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $False)] [switch]$Json
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
 
-    try {
-        # Existing BearerToken check
-        if (!$global:Credentials) {
-            Login-QQCluster
-        }
-        else {
-            if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
-                Login-QQCluster
-            }
-        }
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
+		}
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+				Login-QQCluster
+			}
+		}
 
-        $bearerToken = $global:Credentials.BearerToken
-        $clusterName = $global:Credentials.ClusterName
-        $portNumber = $global:Credentials.PortNumber
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
 
-        $TokenHeader = @{
-            Authorization = "Bearer $bearerToken"
-        }
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
 
-        # API url definition
-        $url = "/v2/network/connections/"
+		# API url definition
+		$url = "/v2/network/connections/"
 
-        # API call run	
-        try {
-            $response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+		# API call run	
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
 
-            # Response
-            if ($json) {
-                return @($response) | ConvertTo-Json -Depth 10
-            }
-            else {
-                return $response
-            }
-        }
-        catch {
-            $_.Exception.Response
-        }
-    }
-    catch {
-        $_.Exception.Response
-    }
+			# Response
+			if ($json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $response
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
 }
 
 function List-QQInterfaces {
@@ -535,56 +542,56 @@ function List-QQInterfaces {
         List-QQInterfaces [-Json]
     #>
 
-    # CmdletBinding parameters
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $False)][switch]$Json
-    )
-    if ($SkipCertificateCheck -eq 'true') {
-        $PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
-    }
+	# CmdletBinding parameters
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $False)] [switch]$Json
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
 
-    try {
-        # Existing BearerToken check
-        if (!$global:Credentials) {
-            Login-QQCluster
-        }
-        else {
-            if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
-                Login-QQCluster
-            }
-        }
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
+		}
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+				Login-QQCluster
+			}
+		}
 
-        $bearerToken = $global:Credentials.BearerToken
-        $clusterName = $global:Credentials.ClusterName
-        $portNumber = $global:Credentials.PortNumber
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
 
-        $TokenHeader = @{
-            Authorization = "Bearer $bearerToken"
-        }
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
 
-        # API url definition
-        $url = "/v2/network/interfaces/"
+		# API url definition
+		$url = "/v2/network/interfaces/"
 
-        # API call run
-        try {
-            $response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+		# API call run
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
 
-            # Response
-            if ($json) {
-                return @($response) | ConvertTo-Json -Depth 10
-            }
-            else {
-                return $response
-            }
-        }
-        catch {
-            $_.Exception.Response
-        }
-    }
-    catch {
-        $_.Exception.Response
-    }
+			# Response
+			if ($json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $response
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
 }
 
 function Get-QQInterface {
@@ -599,61 +606,61 @@ function Get-QQInterface {
         Get-QQNetwork -InterfaceID [ID] [-Json]
     #>
 
-    # CmdletBinding parameters
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $False)][switch]$Json,
-        [Parameter(Mandatory = $True)][string]$InterfaceID
-    )
-    if ($SkipCertificateCheck -eq 'true') {
-        $PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
-    }
+	# CmdletBinding parameters
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $False)] [switch]$Json,
+		[Parameter(Mandatory = $True)] [string]$InterfaceID
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
 
-    try {
-        # Existing BearerToken check
-        if (!$global:Credentials) {
-            Login-QQCluster
-        }
-        else {
-            if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
-                Login-QQCluster
-            }
-        }
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
+		}
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+				Login-QQCluster
+			}
+		}
 
-        $bearerToken = $global:Credentials.BearerToken
-        $clusterName = $global:Credentials.ClusterName
-        $portNumber = $global:Credentials.PortNumber
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
 
-        $TokenHeader = @{
-            Authorization = "Bearer $bearerToken"
-        }
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
 
-        # API url definition
-        $url = "/v2/network/interfaces/$InterfaceID"
+		# API url definition
+		$url = "/v2/network/interfaces/$InterfaceID"
 
-        # API call run	
-        try {
-            $response= Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+		# API call run	
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
 
-            # Response
-            if ($json) {
-                return @($response) | ConvertTo-Json -Depth 10
-            }
-            else {
-                return $response
-            }
-        }
-        catch {
-            $_.Exception.Response
-        }
-    }
-    catch {
-        $_.Exception.Response
-    }
+			# Response
+			if ($json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $response
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
 }
 
 function Modify-QQInterface {
-    <#
+<#
         .SYNOPSIS
             Modify interface configuration
         .DESCRIPTION
@@ -672,77 +679,77 @@ function Modify-QQInterface {
             Modify-QQInterface [-Json] -InterfaceID INTERFACE_ID -DefaultGateway DEFAULT_GATEWAY -DefaultGatewayIpv6 DEFAULT_GATEWAY_IPV6 -BondingMode    {ACTIVE_BACKUP,IEEE_8023AD} -Mtu MTU
         #>
 
-        # CmdletBinding parameters
-        [CmdletBinding()]
-        param(
-            [Parameter(Mandatory = $False)][switch]$Json,
-            [Parameter(Mandatory = $True)][string]$InterfaceID,
-            [Parameter(Mandatory = $False)][string]$DefaultGateway,
-            [Parameter(Mandatory = $False)][string]$DefaultGatewayIpv6,
-            [Parameter(Mandatory = $False)][ValidateSet("Active_Backup","IEEE_8023AD")][string]$BondingMode,
-            [Parameter(Mandatory = $False)][int16]$MTU
-        )
-        if ($SkipCertificateCheck -eq 'true') {
-            $PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
-        }
-    
-        try {
-            # Existing BearerToken check
-            if (!$global:Credentials) {
-                Login-QQCluster
-            }
-            else {
-                if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
-                    Login-QQCluster
-                }
-            }
-    
-            $bearerToken = $global:Credentials.BearerToken
-            $clusterName = $global:Credentials.ClusterName
-            $portNumber = $global:Credentials.PortNumber
-    
-            $TokenHeader = @{
-                Authorization = "Bearer $bearerToken"
-            }
-    
-            # API Request Body
-            $body = @{
-                "id" = [int16]$InterfaceID
-            }
+	# CmdletBinding parameters
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $False)] [switch]$Json,
+		[Parameter(Mandatory = $True)] [string]$InterfaceID,
+		[Parameter(Mandatory = $False)] [string]$DefaultGateway,
+		[Parameter(Mandatory = $False)] [string]$DefaultGatewayIpv6,
+		[Parameter(Mandatory = $False)][ValidateSet("Active_Backup","IEEE_8023AD")] [string]$BondingMode,
+		[Parameter(Mandatory = $False)] [int16]$MTU
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
 
-            if($DefaultGateway){ $body += @{"default_gateway" = $DefaultGateway}}
-            if($DefaultGatewayIpv6){ $body += @{"default_gateway_ipv6" = $DefaultGatewayIpv6}}
-            if($BondingMode){ $body += @{"bonding_mode" = $BondingMode.ToUpper()}}
-            if($MTU){ $body += @{"mtu" = $MTU}}
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
+		}
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+				Login-QQCluster
+			}
+		}
 
-            Write-Debug($body| ConvertTo-Json -Depth 10)
-    
-            # API url definition
-            $url = "/v2/network/interfaces/$InterfaceID"
-            
-            # API call run
-            try {
-                $response = Invoke-RestMethod -SkipCertificateCheck -Method 'PATCH' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
-    
-                # Response (Existing interface configurations)
-                $url = "/v2/network/interfaces/"
-                $DetailedResponse = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
-    
-                if ($json) {
-                    return @($DetailedResponse) | ConvertTo-Json -Depth 10
-                }
-                else {
-                    return $DetailedResponse
-                }
-            }
-            catch {
-                $_.Exception.Response
-            }
-        }
-        catch {
-            $_.Exception.Response
-        }
-    }
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
+
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
+
+		# API Request Body
+		$body = @{
+			"id" = [int16]$InterfaceID
+		}
+
+		if ($DefaultGateway) { $body += @{ "default_gateway" = $DefaultGateway } }
+		if ($DefaultGatewayIpv6) { $body += @{ "default_gateway_ipv6" = $DefaultGatewayIpv6 } }
+		if ($BondingMode) { $body += @{ "bonding_mode" = $BondingMode.ToUpper() } }
+		if ($MTU) { $body += @{ "mtu" = $MTU } }
+
+		Write-Debug ($body | ConvertTo-Json -Depth 10)
+
+		# API url definition
+		$url = "/v2/network/interfaces/$InterfaceID"
+
+		# API call run
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'PATCH' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
+
+			# Response (Existing interface configurations)
+			$url = "/v2/network/interfaces/"
+			$DetailedResponse = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+
+			if ($json) {
+				return @($DetailedResponse) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $DetailedResponse
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
+}
 
 
 function List-QQNetworkPoll {
@@ -757,62 +764,62 @@ function List-QQNetworkPoll {
         List-QQNetworkPoll[-Json]
     #>
 
-    # CmdletBinding parameters
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $False)][switch]$Json,
-        [Parameter(Mandatory = $False)][string]$NodeID
-    )
-    if ($SkipCertificateCheck -eq 'true') {
-        $PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
-    }
+	# CmdletBinding parameters
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $False)] [switch]$Json,
+		[Parameter(Mandatory = $False)] [string]$NodeID
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
 
-    try {
-        # Existing BearerToken check
-        if (!$global:Credentials) {
-            Login-QQCluster
-        }
-        else {
-            if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
-                Login-QQCluster
-            }
-        }
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
+		}
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+				Login-QQCluster
+			}
+		}
 
-        $bearerToken = $global:Credentials.BearerToken
-        $clusterName = $global:Credentials.ClusterName
-        $portNumber = $global:Credentials.PortNumber
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
 
-        $TokenHeader = @{
-            Authorization = "Bearer $bearerToken"
-        }
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
 
-        # API url definition
-        if($nodeID){
-            $url = "/v2/network/interfaces/1/status/$nodeID"
-        }
-        else{
-            $url = "/v2/network/interfaces/1/status/"
-        }
-        
-        # API call run	
-        try {
-            $response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+		# API url definition
+		if ($nodeID) {
+			$url = "/v2/network/interfaces/1/status/$nodeID"
+		}
+		else {
+			$url = "/v2/network/interfaces/1/status/"
+		}
 
-            # Response
-            if ($json) {
-                return @($response) | ConvertTo-Json -Depth 10
-            }
-            else {
-                return $response
-            }
-        }
-        catch {
-            $_.Exception.Response
-        }
-    }
-    catch {
-        $_.Exception.Response
-    }
+		# API call run	
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+
+			# Response
+			if ($json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $response
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
 }
 
 function Get-QQPersistentIps {
@@ -827,56 +834,56 @@ function Get-QQPersistentIps {
         https://care.qumulo.com/hc/en-us/articles/115007237948-Connect-to-Multiple-Networks-in-Qumulo-Core
     #>
 
-    # CmdletBinding parameters
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $False)][switch]$Json
-    )
-    if ($SkipCertificateCheck -eq 'true') {
-        $PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
-    }
+	# CmdletBinding parameters
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $False)] [switch]$Json
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
 
-    try {
-        # Existing BearerToken check
-        if (!$global:Credentials) {
-            Login-QQCluster
-        }
-        else {
-            if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
-                Login-QQCluster
-            }
-        }
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
+		}
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+				Login-QQCluster
+			}
+		}
 
-        $bearerToken = $global:Credentials.BearerToken
-        $clusterName = $global:Credentials.ClusterName
-        $portNumber = $global:Credentials.PortNumber
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
 
-        $TokenHeader = @{
-            Authorization = "Bearer $bearerToken"
-        }
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
 
-        # API url definition
-        $url = "/v1/network/static-ip-allocation"
+		# API url definition
+		$url = "/v1/network/static-ip-allocation"
 
-        # API call run	
-        try {
-            $response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+		# API call run	
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
 
-            # Response
-            if ($json) {
-                return @($response) | ConvertTo-Json -Depth 10
-            }
-            else {
-                return $response
-            }
-        }
-        catch {
-            $_.Exception.Response
-        }
-    }
-    catch {
-        $_.Exception.Response
-    }
+			# Response
+			if ($json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $response
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
 }
 
 function Get-QQFloatingIps {
@@ -891,54 +898,54 @@ function Get-QQFloatingIps {
         https://care.qumulo.com/hc/en-us/articles/115007237948-Connect-to-Multiple-Networks-in-Qumulo-Core
     #>
 
-    # CmdletBinding parameters
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $False)][switch]$Json
-    )
-    if ($SkipCertificateCheck -eq 'true') {
-        $PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
-    }
+	# CmdletBinding parameters
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $False)] [switch]$Json
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
 
-    try {
-        # Existing BearerToken check
-        if (!$global:Credentials) {
-            Login-QQCluster
-        }
-        else {
-            if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
-                Login-QQCluster
-            }
-        }
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
+		}
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+				Login-QQCluster
+			}
+		}
 
-        $bearerToken = $global:Credentials.BearerToken
-        $clusterName = $global:Credentials.ClusterName
-        $portNumber = $global:Credentials.PortNumber
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
 
-        $TokenHeader = @{
-            Authorization = "Bearer $bearerToken"
-        }
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
 
-        # API url definition
-        $url = "/v1/network/floating-ip-allocation"
+		# API url definition
+		$url = "/v1/network/floating-ip-allocation"
 
-        # API call run	
-        try {
-            $response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+		# API call run	
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
 
-            # Response
-            if ($json) {
-                return @($response) | ConvertTo-Json -Depth 10
-            }
-            else {
-                return $response
-            }
-        }
-        catch {
-            $_.Exception.Response
-        }
-    }
-    catch {
-        $_.Exception.Response
-    }
+			# Response
+			if ($json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $response
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
 }

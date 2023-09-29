@@ -297,26 +297,26 @@ function Create-QQAccessToken {
 
 function Modify-QQAccessToken {
 <#
-        .SYNOPSIS
-            Modify the specified access token
-        .DESCRIPTION
-            Modify metadata for the specified access token.
-        .PARAMETER Id [ACCESS_TOKEN_ID]
-            The unique ID of the access token to be modified.
-        .PARAMETER ExpirationTime [EXPIRATION_TIME]
-            The expiration time of the access token. After this time, the token
-            will no longer be usable for authentication. For example, "2024-01-20T12:00:00", with times interpreted in
-            UTC timezone.
-        .PARAMETER Enable
-            Enable the access token.
-        .PARAMETER Disable
-            Disable the access token. It can no longer be used to authenticate
-                        until it is enabled.
-        .EXAMPLE
-            Modify-QQAccessToken -Id [ACCESS_TOKEN_ID] -Enable [-Json]
-            Modify-QQAccessToken -Id [ACCESS_TOKEN_ID] -Disable [-Json]
-            Modify-QQAccessToken -Id [ACCESS_TOKEN_ID] -ExpirationTime 1/20/2024" [-Json]
-        #>
+    .SYNOPSIS
+        Modify the specified access token
+    .DESCRIPTION
+        Modify metadata for the specified access token.
+    .PARAMETER Id [ACCESS_TOKEN_ID]
+        The unique ID of the access token to be modified.
+    .PARAMETER ExpirationTime [EXPIRATION_TIME]
+        The expiration time of the access token. After this time, the token
+        will no longer be usable for authentication. For example, "2024-01-20T12:00:00", with times interpreted in
+        UTC timezone.
+    .PARAMETER Enable
+        Enable the access token.
+    .PARAMETER Disable
+        Disable the access token. It can no longer be used to authenticate
+                    until it is enabled.
+    .EXAMPLE
+        Modify-QQAccessToken -Id [ACCESS_TOKEN_ID] -Enable [-Json]
+        Modify-QQAccessToken -Id [ACCESS_TOKEN_ID] -Disable [-Json]
+        Modify-QQAccessToken -Id [ACCESS_TOKEN_ID] -ExpirationTime 1/20/2024" [-Json]
+    #>
 
 	# CmdletBinding parameters.
 	[CmdletBinding()]

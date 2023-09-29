@@ -44,7 +44,7 @@ function List-QQNFSExports {
 	# CmdletBinding parameters.
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $False)][switch]$Json
+		[Parameter(Mandatory = $False)] [switch]$Json
 	)
 	if ($SkipCertificateCheck -eq 'true') {
 		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
@@ -65,7 +65,7 @@ function List-QQNFSExports {
 		$clusterName = $global:Credentials.ClusterName
 		$portNumber = $global:Credentials.PortNumber
 
-		Write-Debug ($global:Credentials|ConvertTo-Json -Depth 10)
+		Write-Debug ($global:Credentials | ConvertTo-Json -Depth 10)
 
 		$TokenHeader = @{
 			Authorization = "Bearer $bearerToken"
@@ -75,13 +75,13 @@ function List-QQNFSExports {
 		$url = "/v1/multitenancy/tenants/"
 		$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
 		$entries = $response.entries
-		Write-Debug ($response| ConvertTo-Json -Depth 10)
+		Write-Debug ($response | ConvertTo-Json -Depth 10)
 
 		# API url definition
-		if ($entries.Count -eq 1){
+		if ($entries.Count -eq 1) {
 			$url = "/v2/nfs/exports/"
 		}
-		else{
+		else {
 			$url = "/v3/nfs/exports/"
 		}
 
@@ -124,8 +124,8 @@ function Get-QQNFSExport {
 	# CmdletBinding parameters.
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $True,ParameterSetName = "ExportId")][string]$ExportId,
-		[Parameter(Mandatory = $True,ParameterSetName = "Name")][string]$ExportPath,
+		[Parameter(Mandatory = $True,ParameterSetName = "ExportId")] [string]$ExportId,
+		[Parameter(Mandatory = $True,ParameterSetName = "Name")] [string]$ExportPath,
 		[Parameter(Mandatory = $False)] [switch]$Json
 	)
 	if ($SkipCertificateCheck -eq 'true') {
@@ -147,7 +147,7 @@ function Get-QQNFSExport {
 		$clusterName = $global:Credentials.ClusterName
 		$portNumber = $global:Credentials.PortNumber
 
-		Write-Debug ($global:Credentials|ConvertTo-Json -Depth 10)
+		Write-Debug ($global:Credentials | ConvertTo-Json -Depth 10)
 
 		$TokenHeader = @{
 			Authorization = "Bearer $bearerToken"
@@ -157,21 +157,21 @@ function Get-QQNFSExport {
 		$url = "/v1/multitenancy/tenants/"
 		$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
 		$entries = $response.entries
-		Write-Debug ($response| ConvertTo-Json -Depth 10)
+		Write-Debug ($response | ConvertTo-Json -Depth 10)
 
 		# API url definition
-		if ($entries.Count -eq 1){
+		if ($entries.Count -eq 1) {
 			$url = "/v2/nfs/exports/"
 		}
-		else{
+		else {
 			$url = "/v3/nfs/exports/"
 		}
 
 		# API url definition
-		If($ExportId){
+		if ($ExportId) {
 			$url += $ExportId
 		}
-		elseif($ExportPath){
+		elseif ($ExportPath) {
 
 			# API call run
 			try {
@@ -180,7 +180,7 @@ function Get-QQNFSExport {
 				# Response
 				$nfsExports = $response.entries
 				foreach ($export in $nfsExports) {
-					if($ExportPath -eq $export.export_path){
+					if ($ExportPath -eq $export.export_path) {
 						$ExportId = $export.id
 						$url += $ExportId
 					}
@@ -204,14 +204,14 @@ function Get-QQNFSExport {
 		}
 		catch {
 			$_.Exception.Response
-			}
+		}
 	}
 	catch {
 		$_.Exception.Response
 	}
 }
 
-function Add-QQNFSExport{
+function Add-QQNFSExport {
 <#
     .SYNOPSIS
         Add a new NFS export
@@ -243,9 +243,9 @@ function Add-QQNFSExport{
 	# CmdletBinding parameters.
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $True)][string]$ExportPath,
-		[Parameter(Mandatory = $True)][string]$fsPath,
-		[Parameter(Mandatory = $False)] [bool]$CreateFSPath=$False,
+		[Parameter(Mandatory = $True)] [string]$ExportPath,
+		[Parameter(Mandatory = $True)] [string]$fsPath,
+		[Parameter(Mandatory = $False)] [bool]$CreateFSPath = $False,
 		[Parameter(Mandatory = $False)] [string]$Description,
 		[Parameter(Mandatory = $False)] [bool]$ReadOnly = $False,
 		[Parameter(Mandatory = $False)] [string]$TenantID,
@@ -270,7 +270,7 @@ function Add-QQNFSExport{
 		$clusterName = $global:Credentials.ClusterName
 		$portNumber = $global:Credentials.PortNumber
 
-		Write-Debug ($global:Credentials|ConvertTo-Json -Depth 10)
+		Write-Debug ($global:Credentials | ConvertTo-Json -Depth 10)
 
 		$TokenHeader = @{
 			Authorization = "Bearer $bearerToken"
@@ -280,13 +280,13 @@ function Add-QQNFSExport{
 		$url = "/v1/multitenancy/tenants/"
 		$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
 		$entries = $response.entries
-		Write-Debug ($response| ConvertTo-Json -Depth 10)
+		Write-Debug ($response | ConvertTo-Json -Depth 10)
 
 		# API url definition
-		if ($entries.Count -eq 1){
+		if ($entries.Count -eq 1) {
 			$url = "/v2/nfs/exports/"
 		}
-		else{
+		else {
 			$url = "/v3/nfs/exports/"
 		}
 
@@ -308,21 +308,21 @@ function Add-QQNFSExport{
 			"fs_path" = $FsPath
 			"description" = $Description
 			"tenant_id" = $TenantID
-			"restrictions"= @(@{
-				"host_restrictions"= @()
-				"require_privileged_port"= $false
-				"read_only"= $ReadOnly
-				"user_mapping"= "NFS_MAP_NONE"
-				"map_to_user"= @{
-					"id_type"= "LOCAL_USER"
-					"id_value"= "0"
-				}
+			"restrictions" = @(@{
+					"host_restrictions" = @()
+					"require_privileged_port" = $false
+					"read_only" = $ReadOnly
+					"user_mapping" = "NFS_MAP_NONE"
+					"map_to_user" = @{
+						"id_type" = "LOCAL_USER"
+						"id_value" = "0"
+					}
 
-			})
+				})
 		}
 
-		Write-Debug($body| ConvertTo-Json -Depth 10)
-		
+		Write-Debug ($body | ConvertTo-Json -Depth 10)
+
 		# API call run
 		try {
 			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'POST' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
@@ -361,8 +361,8 @@ function Delete-QQNFSExport {
 	# CmdletBinding parameters.
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $True,ParameterSetName = "Id")][string]$Id,
-		[Parameter(Mandatory = $True,ParameterSetName = "ExportPath")][string]$ExportPath
+		[Parameter(Mandatory = $True,ParameterSetName = "Id")] [string]$Id,
+		[Parameter(Mandatory = $True,ParameterSetName = "ExportPath")] [string]$ExportPath
 	)
 	if ($SkipCertificateCheck -eq 'true') {
 		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
@@ -383,7 +383,7 @@ function Delete-QQNFSExport {
 		$clusterName = $global:Credentials.ClusterName
 		$portNumber = $global:Credentials.PortNumber
 
-		Write-Debug ($global:Credentials|ConvertTo-Json -Depth 10)
+		Write-Debug ($global:Credentials | ConvertTo-Json -Depth 10)
 
 		$TokenHeader = @{
 			Authorization = "Bearer $bearerToken"
@@ -393,21 +393,21 @@ function Delete-QQNFSExport {
 		$url = "/v1/multitenancy/tenants/"
 		$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
 		$entries = $response.entries
-		Write-Debug ($response| ConvertTo-Json -Depth 10)
+		Write-Debug ($response | ConvertTo-Json -Depth 10)
 
 		# API url definition
-		if ($entries.Count -eq 1){
+		if ($entries.Count -eq 1) {
 			$url = "/v2/nfs/exports/"
 		}
-		else{
+		else {
 			$url = "/v3/nfs/exports/"
 		}
 
 		# API url definition
-		If($ExportId){
+		if ($ExportId) {
 			$url += $ExportId
 		}
-		elseif($ExportPath){
+		elseif ($ExportPath) {
 
 			# API call run
 			try {
@@ -416,7 +416,7 @@ function Delete-QQNFSExport {
 				# Response
 				$nfsExports = $response.entries
 				foreach ($export in $nfsExports) {
-					if($ExportPath -eq $export.export_path){
+					if ($ExportPath -eq $export.export_path) {
 						$ExportId = $export.id
 						$url += $ExportId
 					}
@@ -482,13 +482,13 @@ function Modify-QQNFSExport {
 	# CmdletBinding parameters.
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $False)][string]$ExportPath,
-		[Parameter(Mandatory = $False)][string]$ExportId,
-		[Parameter(Mandatory = $False)][string]$NewFsPath,
-		[Parameter(Mandatory = $False)] [bool]$CreateFSPath=$False,
+		[Parameter(Mandatory = $False)] [string]$ExportPath,
+		[Parameter(Mandatory = $False)] [string]$ExportId,
+		[Parameter(Mandatory = $False)] [string]$NewFsPath,
+		[Parameter(Mandatory = $False)] [bool]$CreateFSPath = $False,
 		[Parameter(Mandatory = $False)] [string]$Description,
 		[Parameter(Mandatory = $False)] [string]$TenantID,
-		[Parameter(Mandatory = $False)][string]$NewExportPath,
+		[Parameter(Mandatory = $False)] [string]$NewExportPath,
 		[Parameter(Mandatory = $False)] [string]$NewTenantID
 	)
 	if ($SkipCertificateCheck -eq 'true') {
@@ -510,7 +510,7 @@ function Modify-QQNFSExport {
 		$clusterName = $global:Credentials.ClusterName
 		$portNumber = $global:Credentials.PortNumber
 
-		Write-Debug ($global:Credentials|ConvertTo-Json -Depth 10)
+		Write-Debug ($global:Credentials | ConvertTo-Json -Depth 10)
 
 		$TokenHeader = @{
 			Authorization = "Bearer $bearerToken"
@@ -520,20 +520,20 @@ function Modify-QQNFSExport {
 		$url = "/v1/multitenancy/tenants/"
 		$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
 		$entries = $response.entries
-		Write-Debug ($response| ConvertTo-Json -Depth 10)
+		Write-Debug ($response | ConvertTo-Json -Depth 10)
 
 		# API url definition
-		if ($entries.Count -eq 1){
+		if ($entries.Count -eq 1) {
 			$url = "/v2/nfs/exports/"
 		}
-		else{
+		else {
 			$url = "/v3/nfs/exports/"
 		}
 
-		If($ExportId){
+		if ($ExportId) {
 			$url += $ExportId
 		}
-		elseif($ExportPath){
+		elseif ($ExportPath) {
 
 			# API call run
 			try {
@@ -542,7 +542,7 @@ function Modify-QQNFSExport {
 				# Response
 				$nfsExports = $response.entries
 				foreach ($export in $nfsExports) {
-					if($ExportPath -eq $export.export_path){
+					if ($ExportPath -eq $export.export_path) {
 						$ExportId = $export.id
 						$url += $ExportId
 					}
@@ -608,7 +608,7 @@ function Modify-QQNFSExport {
 }
 
 function Add-QQNFSExportHostAccess {
-	<#
+<#
 		.SYNOPSIS
 			Add an access hosts are granted to an export
 		.DESCRIPTION
@@ -631,7 +631,7 @@ function Add-QQNFSExportHostAccess {
 			The name of a local user to squash to.
 		.EXAMPLE
 			Add-QQNFSExportHostAccess 
-				-ExportPath EXPORT_PATH -TenantID TENANT_ID | -ExportId EXPORT_ID -TenantID TENANT_ID
+				-ExportPath EXPORT_PATH -TenantID TENANT_ID | -ExportId EXPORT_ID
 				-HostRestriction [HOSTS]
 				-ReadOnly $true
 				-RootSquash
@@ -640,177 +640,177 @@ function Add-QQNFSExportHostAccess {
 		.LINK
 	
 		#>
-		# CmdletBinding parameters.
-		[CmdletBinding()]
-		param(
-			[Parameter(Mandatory = $False)][string]$ExportPath,
-			[Parameter(Mandatory = $False)][string]$ExportId,
-			[Parameter(Mandatory = $False)] [string]$TenantID,
-			[Parameter(Mandatory = $False)] [array]$HostRestrictions,
-			[Parameter(Mandatory = $False)] [switch]$ReadOnly,
-			[Parameter(Mandatory = $False)] [switch]$RootSquash,
-			[Parameter(Mandatory = $False)] [switch]$AllSquash,
-			[Parameter(Mandatory = $False)] [string]$AnonLocal
+	# CmdletBinding parameters.
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $False)] [string]$ExportPath,
+		[Parameter(Mandatory = $False)] [string]$ExportId,
+		[Parameter(Mandatory = $False)] [string]$TenantID,
+		[Parameter(Mandatory = $False)] [array]$HostRestrictions,
+		[Parameter(Mandatory = $False)] [switch]$ReadOnly,
+		[Parameter(Mandatory = $False)] [switch]$RootSquash,
+		[Parameter(Mandatory = $False)] [switch]$AllSquash,
+		[Parameter(Mandatory = $False)] [string]$AnonLocal
 
-		)
-		if ($SkipCertificateCheck -eq 'true') {
-			$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
+
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
 		}
-	
-		try {
-			# Existing BearerToken check
-			if (!$global:Credentials) {
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
 				Login-QQCluster
 			}
-			else {
-				if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
-					Login-QQCluster
-				}
-			}
-	
-			$bearerToken = $global:Credentials.BearerToken
-			$clusterName = $global:Credentials.ClusterName
-			$portNumber = $global:Credentials.PortNumber
-	
-			Write-Debug ($global:Credentials|ConvertTo-Json -Depth 10)
-	
-			$TokenHeader = @{
-				Authorization = "Bearer $bearerToken"
-			}
-	
-			# Multi-tenancy check
-			$tenant_url = "/v1/multitenancy/tenants/"
-			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$tenant_url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
-			$tenants = $response.entries
-			Write-Debug ($response| ConvertTo-Json -Depth 10)
-	
-			# API url definition
-			if ($tenants.Count -eq 1){
-				$url = "/v2/nfs/exports/"
-			}
-			else{
-				$url = "/v3/nfs/exports/"
-			}
-	
-			
-	
-			# API call run
-			try {
-				$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
-				
-				$nfsExports = $response.entries
+		}
 
-				
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
 
-				If($ExportId){
-					foreach ($export in $nfsExports) {
-						if($ExportId -eq $export.id){
-							$existingRestrictions = $export.restrictions
-							$url += $ExportId 
-							$url += "?allow-fs-path-create=false"
-						}
-					}
-				}
-				elseif($ExportPath){
-					# Response
-					$nfsExports = $response.entries
-					foreach ($export in $nfsExports) {
-						if($ExportPath -eq $export.export_path){
-							$ExportId = $export.id
-							$existingRestrictions = $export.restrictions
-							$url += $ExportId 
-							$url += "?allow-fs-path-create=false"
-						}
+		Write-Debug ($global:Credentials | ConvertTo-Json -Depth 10)
+
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
+
+		# Multi-tenancy check
+		$tenant_url = "/v1/multitenancy/tenants/"
+		$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$tenant_url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+		$tenants = $response.entries
+		Write-Debug ($response | ConvertTo-Json -Depth 10)
+
+		# API url definition
+		if ($tenants.Count -eq 1) {
+			$url = "/v2/nfs/exports/"
+		}
+		else {
+			$url = "/v3/nfs/exports/"
+		}
+
+
+
+		# API call run
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+
+			$nfsExports = $response.entries
+
+
+
+			if ($ExportId) {
+				foreach ($export in $nfsExports) {
+					if ($ExportId -eq $export.id) {
+						$existingRestrictions = $export.restrictions
+						$url += $ExportId
+						$url += "?allow-fs-path-create=false"
 					}
 				}
 			}
-			catch {
-				$_.Exception.Response
-			}
-
-			Write-Debug($url)
-			# API Request body
-			
-			$newRestriction = @{}
-	
-			if ($HostRestrictions){
-				$newRestriction += @{
-					"host_restrictions" = $HostRestrictions
-				}
-			}
-			if ($RootSquash){
-				$newRestriction += @{
-					"user_mapping" = "NFS_MAP_ROOT"
-					"map_to_user" = @{
-						"id_type" = "LOCAL_USER"
-						"id_value" = $AnonLocal
-					}
-				}
-			}
-
-			if ($AllSquash){
-				$newRestriction += @{
-					"user_mapping" = "NFS_MAP_ALL"
-					"map_to_user" = @{
-						"id_type" = "LOCAL_USER"
-						"id_value" = $AnonLocal
-					}
-				}
-			}
-
-			if (-not( $AllSquash -or $RootSquash)){
-				$newRestriction += @{
-					"user_mapping" = "NFS_MAP_NONE"
-				}
-			}
-
-			if($ReadOnly){
-				$newRestriction += @{
-					"read_only" = $true
-				}
-			}
-			else{
-				$newRestriction += @{
-					"read_only" = $false
-				}
-			}
-
-
-			$newRestriction += @{
-				"require_privileged_port" = $false
-			}
-
-			$existingRestrictions += @($newRestriction)
-
-			$body = @{
-				"restrictions" = $existingRestrictions
-			}
-
-			Write-Debug($body|ConvertTo-Json -Depth 10)
-	
-			# API call run
-			try {
-				$response = Invoke-RestMethod -SkipCertificateCheck -Method 'PATCH' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
-	
+			elseif ($ExportPath) {
 				# Response
-				if ($Json) {
-					return @($response) | ConvertTo-Json -Depth 10
-				}
-				else {
-					return $response
+				$nfsExports = $response.entries
+				foreach ($export in $nfsExports) {
+					if ($ExportPath -eq $export.export_path) {
+						$ExportId = $export.id
+						$existingRestrictions = $export.restrictions
+						$url += $ExportId
+						$url += "?allow-fs-path-create=false"
+					}
 				}
 			}
-			catch {
-				$_.Exception.Response
+		}
+		catch {
+			$_.Exception.Response
+		}
+
+		Write-Debug ($url)
+		# API Request body
+
+		$newRestriction = @{}
+
+		if ($HostRestrictions) {
+			$newRestriction += @{
+				"host_restrictions" = $HostRestrictions
+			}
+		}
+		if ($RootSquash) {
+			$newRestriction += @{
+				"user_mapping" = "NFS_MAP_ROOT"
+				"map_to_user" = @{
+					"id_type" = "LOCAL_USER"
+					"id_value" = $AnonLocal
+				}
+			}
+		}
+
+		if ($AllSquash) {
+			$newRestriction += @{
+				"user_mapping" = "NFS_MAP_ALL"
+				"map_to_user" = @{
+					"id_type" = "LOCAL_USER"
+					"id_value" = $AnonLocal
+				}
+			}
+		}
+
+		if (-not ($AllSquash -or $RootSquash)) {
+			$newRestriction += @{
+				"user_mapping" = "NFS_MAP_NONE"
+			}
+		}
+
+		if ($ReadOnly) {
+			$newRestriction += @{
+				"read_only" = $true
+			}
+		}
+		else {
+			$newRestriction += @{
+				"read_only" = $false
+			}
+		}
+
+
+		$newRestriction += @{
+			"require_privileged_port" = $false
+		}
+
+		$existingRestrictions += @($newRestriction)
+
+		$body = @{
+			"restrictions" = $existingRestrictions
+		}
+
+		Write-Debug ($body | ConvertTo-Json -Depth 10)
+
+		# API call run
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'PATCH' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
+
+			# Response
+			if ($Json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $response
 			}
 		}
 		catch {
 			$_.Exception.Response
 		}
 	}
+	catch {
+		$_.Exception.Response
+	}
+}
 
 function List-QQNFSExportHostAccess {
-	<#
+<#
 		.SYNOPSIS
 			List the host restrictions of an export
 		.DESCRIPTION
@@ -823,107 +823,107 @@ function List-QQNFSExportHostAccess {
 			ID of the tenant the export is in. Only used if using the -ExportPath argument.
 		.EXAMPLE
 			Add-QQNFSExportHostAccess 
-				-ExportPath EXPORT_PATH -TenantID TENANT_ID | -ExportId EXPORT_ID -TenantID TENANT_ID
+				-ExportPath EXPORT_PATH -TenantID TENANT_ID | -ExportId EXPORT_ID
 			.LINK
 	
 		#>
-		# CmdletBinding parameters.
-		[CmdletBinding()]
-		param(
-			[Parameter(Mandatory = $False)][string]$ExportPath,
-			[Parameter(Mandatory = $False)][string]$ExportId,
-			[Parameter(Mandatory = $False)] [string]$TenantID
+	# CmdletBinding parameters.
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $False)] [string]$ExportPath,
+		[Parameter(Mandatory = $False)] [string]$ExportId,
+		[Parameter(Mandatory = $False)] [string]$TenantID
 
-		)
-		if ($SkipCertificateCheck -eq 'true') {
-			$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
+
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
 		}
-	
-		try {
-			# Existing BearerToken check
-			if (!$global:Credentials) {
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
 				Login-QQCluster
 			}
-			else {
-				if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
-					Login-QQCluster
-				}
-			}
-	
-			$bearerToken = $global:Credentials.BearerToken
-			$clusterName = $global:Credentials.ClusterName
-			$portNumber = $global:Credentials.PortNumber
-	
-			Write-Debug ($global:Credentials|ConvertTo-Json -Depth 10)
-	
-			$TokenHeader = @{
-				Authorization = "Bearer $bearerToken"
-			}
-	
-			# Multi-tenancy check
-			$url = "/v1/multitenancy/tenants/"
+		}
+
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
+
+		Write-Debug ($global:Credentials | ConvertTo-Json -Depth 10)
+
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
+
+		# Multi-tenancy check
+		$url = "/v1/multitenancy/tenants/"
+		$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+		$entries = $response.entries
+		Write-Debug ($response | ConvertTo-Json -Depth 10)
+
+		# API url definition
+		if ($entries.Count -eq 1) {
+			$url = "/v2/nfs/exports/"
+		}
+		else {
+			$url = "/v3/nfs/exports/"
+		}
+
+
+
+		# API call run
+		try {
 			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
-			$entries = $response.entries
-			Write-Debug ($response| ConvertTo-Json -Depth 10)
-	
-			# API url definition
-			if ($entries.Count -eq 1){
-				$url = "/v2/nfs/exports/"
+
+			$nfsExports = $response.entries
+
+			if ($ExportId) {
+				foreach ($export in $nfsExports) {
+					if ($ExportId -eq $export.id) {
+						$existingRestrictions = $export.restrictions
+						Write-Host ($existingRestrictions | ConvertTo-Json -Depth 10)
+					}
+				}
 			}
-			else{
-				$url = "/v3/nfs/exports/"
-			}
-	
-			
-	
-			# API call run
-			try {
-				$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
-				
+			elseif ($ExportPath) {
+				# Response
 				$nfsExports = $response.entries
+				foreach ($export in $nfsExports) {
+					if ($ExportPath -eq $export.export_path) {
+						$existingRestrictions = $export.restrictions
+						$i = 1
+						$existingRestrictionsWPosition = @()
+						foreach ($restriction in $existingRestrictions)
+						{
 
-				If($ExportId){
-					foreach ($export in $nfsExports) {
-						if($ExportId -eq $export.id){
-							$existingRestrictions = $export.restrictions
-							Write-Host ($existingRestrictions|ConvertTo-Json -Depth 10)
+							$restriction | Add-Member -MemberType NoteProperty -Name "position" -Value $i.ToString()
+
+							$existingRestrictionsWPosition += $restriction
+
+							$i = $i + 1
 						}
+						Write-Host ($existingRestrictionsWPosition | ConvertTo-Json -Depth 10)
 					}
 				}
-				elseif($ExportPath){
-					# Response
-					$nfsExports = $response.entries
-					foreach ($export in $nfsExports) {
-						if($ExportPath -eq $export.export_path){
-							$existingRestrictions = $export.restrictions
-							$i = 1
-							$existingRestrictionsWPosition = @()
-							foreach ($restriction in $existingRestrictions)
-							{
-								
-								$restriction | Add-Member -MemberType NoteProperty -Name "position" -Value $i.ToString()
-								
-								$existingRestrictionsWPosition += $restriction
-
-								$i = $i + 1
-							}
-							Write-Host ($existingRestrictionsWPosition|ConvertTo-Json -Depth 10)
-						}
-					}
-				}
-			}
-			catch {
-				$_.Exception.Response
 			}
 		}
 		catch {
 			$_.Exception.Response
 		}
 	}
+	catch {
+		$_.Exception.Response
+	}
+}
 
 
 function Modify-QQNFSExportHostAccess {
-	<#
+<#
 		.SYNOPSIS
 			Modify an access hosts are granted to an export
 		.DESCRIPTION
@@ -935,7 +935,7 @@ function Modify-QQNFSExportHostAccess {
 		.PARAMETER TenantId [TENANT_ID]
 			ID of the tenant the export is in. Only used if using the -ExportPath argument.
 		.PARAMETER Position [POSITION]
-			The name of a local user to squash to.
+			The position value of the host restriction that you can get List-QQNFSExportHostAccess
 		.PARAMETER HostRestrictions [HOSTS]
 			Individual IP addresses, CIDR masks (e.g. 10.1.2.0/24), or ranges (e.g. 10.2.3.23-47, fd00::42:1fff-c000). Export will match all by default.
 		.PARAMETER Readonly [$true|$false]
@@ -948,7 +948,7 @@ function Modify-QQNFSExportHostAccess {
 			The name of a local user to squash to.
 		.EXAMPLE
 			Modify-QQNFSExportHostAccess 
-				-ExportPath EXPORT_PATH -TenantID TENANT_ID | -ExportId EXPORT_ID -TenantID TENANT_ID
+				-ExportPath EXPORT_PATH -TenantID TENANT_ID | -ExportId EXPORT_ID
 				-Position [POSITION]
 				-HostRestriction [HOSTS]
 				-ReadOnly $true
@@ -958,247 +958,247 @@ function Modify-QQNFSExportHostAccess {
 		.LINK
 	
 		#>
-		# CmdletBinding parameters.
-		[CmdletBinding()]
-		param(
-			[Parameter(Mandatory = $False)][string]$ExportPath,
-			[Parameter(Mandatory = $False)][string]$ExportId,
-			[Parameter(Mandatory = $False)] [string]$TenantID,
-			[Parameter(Mandatory = $True)] [string]$Position,
-			[Parameter(Mandatory = $False)] [array]$HostRestrictions,
-			[Parameter(Mandatory = $False)] [switch]$ReadOnly,
-			[Parameter(Mandatory = $False)] [switch]$RootSquash,
-			[Parameter(Mandatory = $False)] [switch]$AllSquash,
-			[Parameter(Mandatory = $False)] [string]$AnonLocal
+	# CmdletBinding parameters.
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $False)] [string]$ExportPath,
+		[Parameter(Mandatory = $False)] [string]$ExportId,
+		[Parameter(Mandatory = $False)] [string]$TenantID,
+		[Parameter(Mandatory = $True)] [string]$Position,
+		[Parameter(Mandatory = $False)] [array]$HostRestrictions,
+		[Parameter(Mandatory = $False)] [switch]$ReadOnly,
+		[Parameter(Mandatory = $False)] [switch]$RootSquash,
+		[Parameter(Mandatory = $False)] [switch]$AllSquash,
+		[Parameter(Mandatory = $False)] [string]$AnonLocal
 
-		)
-		if ($SkipCertificateCheck -eq 'true') {
-			$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
+
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
 		}
-	
-		try {
-			# Existing BearerToken check
-			if (!$global:Credentials) {
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
 				Login-QQCluster
 			}
-			else {
-				if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
-					Login-QQCluster
-				}
-			}
-	
-			$bearerToken = $global:Credentials.BearerToken
-			$clusterName = $global:Credentials.ClusterName
-			$portNumber = $global:Credentials.PortNumber
-	
-			Write-Debug ($global:Credentials|ConvertTo-Json -Depth 10)
-	
-			$TokenHeader = @{
-				Authorization = "Bearer $bearerToken"
-			}
-	
-			# Multi-tenancy check
-			$tenant_url = "/v1/multitenancy/tenants/"
-			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$tenant_url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
-			$tenants = $response.entries
-			Write-Debug ($response| ConvertTo-Json -Depth 10)
-	
-			# API url definition
-			if ($tenants.Count -eq 1){
-				$url = "/v2/nfs/exports/"
-			}
-			else{
-				$url = "/v3/nfs/exports/"
-			}
-	
-			
-	
-			# API call run
-			try {
-				$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
-				
-				$nfsExports = $response.entries
+		}
 
-				If($ExportId){
-					foreach ($export in $nfsExports) {
-						if($ExportId -eq $export.id){
-							$ExportId = $export.id
-							$existingRestrictions = $export.restrictions
-							$url += $ExportId
-							$existingRestrictions = $export.restrictions
-							$i = 1
-							$newRestrictions = @()
-							foreach ($restriction in $existingRestrictions)
-							{
-								
-								if($i -eq $Position){
-									$updatedRestriction = @{}
-							
-									if ($HostRestrictions){
-										$updatedRestriction += @{
-											"host_restrictions" = $HostRestrictions
-										}
-									}
-									if ($RootSquash){
-										$updatedRestriction += @{
-											"user_mapping" = "NFS_MAP_ROOT"
-											"map_to_user" = @{
-												"id_type" = "LOCAL_USER"
-												"id_value" = $AnonLocal
-											}
-										}
-									}
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
 
-									if ($AllSquash){
-										$updatedRestriction += @{
-											"user_mapping" = "NFS_MAP_ALL"
-											"map_to_user" = @{
-												"id_type" = "LOCAL_USER"
-												"id_value" = $AnonLocal
-											}
-										}
-									}
+		Write-Debug ($global:Credentials | ConvertTo-Json -Depth 10)
 
-									if (-not( $AllSquash -or $RootSquash)){
-										$updatedRestriction += @{
-											"user_mapping" = "NFS_MAP_NONE"
-										}
-									}
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
 
-									if($ReadOnly){
-										$updatedRestriction += @{
-											"read_only" = $true
-										}
-									}
-									else{
-										$updatedRestriction += @{
-											"read_only" = $false
-										}
-									}
+		# Multi-tenancy check
+		$tenant_url = "/v1/multitenancy/tenants/"
+		$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$tenant_url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+		$tenants = $response.entries
+		Write-Debug ($response | ConvertTo-Json -Depth 10)
+
+		# API url definition
+		if ($tenants.Count -eq 1) {
+			$url = "/v2/nfs/exports/"
+		}
+		else {
+			$url = "/v3/nfs/exports/"
+		}
 
 
+
+		# API call run
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+
+			$nfsExports = $response.entries
+
+			if ($ExportId) {
+				foreach ($export in $nfsExports) {
+					if ($ExportId -eq $export.id) {
+						$ExportId = $export.id
+						$existingRestrictions = $export.restrictions
+						$url += $ExportId
+						$existingRestrictions = $export.restrictions
+						$i = 1
+						$newRestrictions = @()
+						foreach ($restriction in $existingRestrictions)
+						{
+
+							if ($i -eq $Position) {
+								$updatedRestriction = @{}
+
+								if ($HostRestrictions) {
 									$updatedRestriction += @{
-										"require_privileged_port" = $false
+										"host_restrictions" = $HostRestrictions
 									}
-
-									$newRestrictions += $updatedRestriction
 								}
-								else{
-									$newRestrictions += $restriction
-								}
-								$i = $i + 1
-							}
-						}
-					}
-				}
-				elseif($ExportPath){
-					# Response
-					$nfsExports = $response.entries
-					foreach ($export in $nfsExports) {
-						if($ExportPath -eq $export.export_path){
-							$ExportId = $export.id
-							$existingRestrictions = $export.restrictions
-							$url += $ExportId
-							$i = 1
-							$newRestrictions = @()
-							foreach ($restriction in $existingRestrictions)
-							{
-								if($i -eq $Position){
-									$updatedRestriction = @{}
-							
-									if ($HostRestrictions){
-										$updatedRestriction += @{
-											"host_restrictions" = $HostRestrictions
-										}
-									}
-									if ($RootSquash){
-										$updatedRestriction += @{
-											"user_mapping" = "NFS_MAP_ROOT"
-											"map_to_user" = @{
-												"id_type" = "LOCAL_USER"
-												"id_value" = $AnonLocal
-											}
-										}
-									}
-
-									if ($AllSquash){
-										$updatedRestriction += @{
-											"user_mapping" = "NFS_MAP_ALL"
-											"map_to_user" = @{
-												"id_type" = "LOCAL_USER"
-												"id_value" = $AnonLocal
-											}
-										}
-									}
-
-									if (-not( $AllSquash -or $RootSquash)){
-										$updatedRestriction += @{
-											"user_mapping" = "NFS_MAP_NONE"
-										}
-									}
-
-									if($ReadOnly){
-										$updatedRestriction += @{
-											"read_only" = $true
-										}
-									}
-									else{
-										$updatedRestriction += @{
-											"read_only" = $false
-										}
-									}
-
-
+								if ($RootSquash) {
 									$updatedRestriction += @{
-										"require_privileged_port" = $false
+										"user_mapping" = "NFS_MAP_ROOT"
+										"map_to_user" = @{
+											"id_type" = "LOCAL_USER"
+											"id_value" = $AnonLocal
+										}
 									}
+								}
 
-									$newRestrictions += $updatedRestriction
+								if ($AllSquash) {
+									$updatedRestriction += @{
+										"user_mapping" = "NFS_MAP_ALL"
+										"map_to_user" = @{
+											"id_type" = "LOCAL_USER"
+											"id_value" = $AnonLocal
+										}
+									}
 								}
-								else{
-									$newRestrictions += $restriction
+
+								if (-not ($AllSquash -or $RootSquash)) {
+									$updatedRestriction += @{
+										"user_mapping" = "NFS_MAP_NONE"
+									}
 								}
-								$i = $i + 1
+
+								if ($ReadOnly) {
+									$updatedRestriction += @{
+										"read_only" = $true
+									}
+								}
+								else {
+									$updatedRestriction += @{
+										"read_only" = $false
+									}
+								}
+
+
+								$updatedRestriction += @{
+									"require_privileged_port" = $false
+								}
+
+								$newRestrictions += $updatedRestriction
 							}
+							else {
+								$newRestrictions += $restriction
+							}
+							$i = $i + 1
 						}
 					}
 				}
 			}
-			catch {
-				$_.Exception.Response
-			}
-	
-	
-			# API Request body
-			
-
-			$body = @{
-				"restrictions" = $newRestrictions
-			}
-	
-			# API call run
-			try {
-				$response = Invoke-RestMethod -SkipCertificateCheck -Method 'PATCH' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
-	
+			elseif ($ExportPath) {
 				# Response
-				if ($Json) {
-					return @($response) | ConvertTo-Json -Depth 10
-				}
-				else {
-					return $response
+				$nfsExports = $response.entries
+				foreach ($export in $nfsExports) {
+					if ($ExportPath -eq $export.export_path) {
+						$ExportId = $export.id
+						$existingRestrictions = $export.restrictions
+						$url += $ExportId
+						$i = 1
+						$newRestrictions = @()
+						foreach ($restriction in $existingRestrictions)
+						{
+							if ($i -eq $Position) {
+								$updatedRestriction = @{}
+
+								if ($HostRestrictions) {
+									$updatedRestriction += @{
+										"host_restrictions" = $HostRestrictions
+									}
+								}
+								if ($RootSquash) {
+									$updatedRestriction += @{
+										"user_mapping" = "NFS_MAP_ROOT"
+										"map_to_user" = @{
+											"id_type" = "LOCAL_USER"
+											"id_value" = $AnonLocal
+										}
+									}
+								}
+
+								if ($AllSquash) {
+									$updatedRestriction += @{
+										"user_mapping" = "NFS_MAP_ALL"
+										"map_to_user" = @{
+											"id_type" = "LOCAL_USER"
+											"id_value" = $AnonLocal
+										}
+									}
+								}
+
+								if (-not ($AllSquash -or $RootSquash)) {
+									$updatedRestriction += @{
+										"user_mapping" = "NFS_MAP_NONE"
+									}
+								}
+
+								if ($ReadOnly) {
+									$updatedRestriction += @{
+										"read_only" = $true
+									}
+								}
+								else {
+									$updatedRestriction += @{
+										"read_only" = $false
+									}
+								}
+
+
+								$updatedRestriction += @{
+									"require_privileged_port" = $false
+								}
+
+								$newRestrictions += $updatedRestriction
+							}
+							else {
+								$newRestrictions += $restriction
+							}
+							$i = $i + 1
+						}
+					}
 				}
 			}
-			catch {
-				$_.Exception.Response
+		}
+		catch {
+			$_.Exception.Response
+		}
+
+
+		# API Request body
+
+
+		$body = @{
+			"restrictions" = $newRestrictions
+		}
+
+		# API call run
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'PATCH' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
+
+			# Response
+			if ($Json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $response
 			}
 		}
 		catch {
 			$_.Exception.Response
 		}
 	}
+	catch {
+		$_.Exception.Response
+	}
+}
 
 function Remove-QQNFSExportHostAccess {
-	<#
+<#
 		.SYNOPSIS
 			Remove an access hosts are granted to an export
 		.DESCRIPTION
@@ -1210,144 +1210,144 @@ function Remove-QQNFSExportHostAccess {
 		.PARAMETER TenantId [TENANT_ID]
 			ID of the tenant the export is in. Only used if using the -ExportPath argument.
 		.PARAMETER Position [POSITION]
-			The name of a local user to squash to.
+			The position value of the host restriction that you can get List-QQNFSExportHostAccess
 		.EXAMPLE
 			Remove-QQNFSExportHostAccess 
-				-ExportPath EXPORT_PATH -TenantID TENANT_ID | -ExportId EXPORT_ID -TenantID TENANT_ID
+				-ExportPath EXPORT_PATH -TenantID TENANT_ID | -ExportId EXPORT_ID
 				-Position [POSITION]
 			.LINK
 	
 		#>
-		# CmdletBinding parameters.
-		[CmdletBinding()]
-		param(
-			[Parameter(Mandatory = $False)][string]$ExportPath,
-			[Parameter(Mandatory = $False)][string]$ExportId,
-			[Parameter(Mandatory = $False)] [string]$TenantID,
-			[Parameter(Mandatory = $True)] [string]$Position
+	# CmdletBinding parameters.
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $False)] [string]$ExportPath,
+		[Parameter(Mandatory = $False)] [string]$ExportId,
+		[Parameter(Mandatory = $False)] [string]$TenantID,
+		[Parameter(Mandatory = $True)] [string]$Position
 
-		)
-		if ($SkipCertificateCheck -eq 'true') {
-			$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
+
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
 		}
-	
-		try {
-			# Existing BearerToken check
-			if (!$global:Credentials) {
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
 				Login-QQCluster
 			}
-			else {
-				if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
-					Login-QQCluster
-				}
-			}
-	
-			$bearerToken = $global:Credentials.BearerToken
-			$clusterName = $global:Credentials.ClusterName
-			$portNumber = $global:Credentials.PortNumber
-	
-			Write-Debug ($global:Credentials|ConvertTo-Json -Depth 10)
-	
-			$TokenHeader = @{
-				Authorization = "Bearer $bearerToken"
-			}
-	
-			# Multi-tenancy check
-			$url = "/v1/multitenancy/tenants/"
+		}
+
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
+
+		Write-Debug ($global:Credentials | ConvertTo-Json -Depth 10)
+
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
+
+		# Multi-tenancy check
+		$url = "/v1/multitenancy/tenants/"
+		$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+		$entries = $response.entries
+		Write-Debug ($response | ConvertTo-Json -Depth 10)
+
+		# API url definition
+		if ($entries.Count -eq 1) {
+			$url = "/v2/nfs/exports/"
+		}
+		else {
+			$url = "/v3/nfs/exports/"
+		}
+
+
+
+		# API call run
+		try {
 			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
-			$entries = $response.entries
-			Write-Debug ($response| ConvertTo-Json -Depth 10)
-	
-			# API url definition
-			if ($entries.Count -eq 1){
-				$url = "/v2/nfs/exports/"
-			}
-			else{
-				$url = "/v3/nfs/exports/"
-			}
-	
-			
-	
-			# API call run
-			try {
-				$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
-				
-				$nfsExports = $response.entries
 
-				If($ExportId){
-					foreach ($export in $nfsExports) {
-						if($ExportId -eq $export.id){
-							$ExportId = $export.id
-							$existingRestrictions = $export.restrictions
-							$url += $ExportId
-							$existingRestrictions = $export.restrictions
-							$i = 1
-							$newRestrictions = @()
-							foreach ($restriction in $existingRestrictions)
-							{
-								
-								if($i -ne $Position){
-									$newRestrictions += $restriction
-								}
-								$i = $i + 1
+			$nfsExports = $response.entries
+
+			if ($ExportId) {
+				foreach ($export in $nfsExports) {
+					if ($ExportId -eq $export.id) {
+						$ExportId = $export.id
+						$existingRestrictions = $export.restrictions
+						$url += $ExportId
+						$existingRestrictions = $export.restrictions
+						$i = 1
+						$newRestrictions = @()
+						foreach ($restriction in $existingRestrictions)
+						{
+
+							if ($i -ne $Position) {
+								$newRestrictions += $restriction
 							}
-						}
-					}
-				}
-				elseif($ExportPath){
-					# Response
-					$nfsExports = $response.entries
-					foreach ($export in $nfsExports) {
-						if($ExportPath -eq $export.export_path){
-							$ExportId = $export.id
-							$existingRestrictions = $export.restrictions
-							$url += $ExportId
-							$i = 1
-							$newRestrictions = @()
-							foreach ($restriction in $existingRestrictions)
-							{
-								
-								if($i -ne $Position){
-									$newRestrictions += $restriction
-								}
-								$i = $i + 1
-							}
+							$i = $i + 1
 						}
 					}
 				}
 			}
-			catch {
-				$_.Exception.Response
-			}
-	
-	
-			# API Request body
-			
-
-			$body = @{
-				"restrictions" = $newRestrictions
-			}
-	
-			# API call run
-			try {
-				$response = Invoke-RestMethod -SkipCertificateCheck -Method 'PATCH' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
-	
+			elseif ($ExportPath) {
 				# Response
-				if ($Json) {
-					return @($response) | ConvertTo-Json -Depth 10
-				}
-				else {
-					return $response
+				$nfsExports = $response.entries
+				foreach ($export in $nfsExports) {
+					if ($ExportPath -eq $export.export_path) {
+						$ExportId = $export.id
+						$existingRestrictions = $export.restrictions
+						$url += $ExportId
+						$i = 1
+						$newRestrictions = @()
+						foreach ($restriction in $existingRestrictions)
+						{
+
+							if ($i -ne $Position) {
+								$newRestrictions += $restriction
+							}
+							$i = $i + 1
+						}
+					}
 				}
 			}
-			catch {
-				$_.Exception.Response
+		}
+		catch {
+			$_.Exception.Response
+		}
+
+
+		# API Request body
+
+
+		$body = @{
+			"restrictions" = $newRestrictions
+		}
+
+		# API call run
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'PATCH' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
+
+			# Response
+			if ($Json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $response
 			}
 		}
 		catch {
 			$_.Exception.Response
 		}
 	}
+	catch {
+		$_.Exception.Response
+	}
+}
 
 function Get-QQNFSSettings {
 <#
@@ -1388,7 +1388,7 @@ function Get-QQNFSSettings {
 		$clusterName = $global:Credentials.ClusterName
 		$portNumber = $global:Credentials.PortNumber
 
-		Write-Debug ($global:Credentials|ConvertTo-Json -Depth 10)
+		Write-Debug ($global:Credentials | ConvertTo-Json -Depth 10)
 
 		$TokenHeader = @{
 			Authorization = "Bearer $bearerToken"
@@ -1494,7 +1494,7 @@ function Modify-QQNFSSettings {
 		$clusterName = $global:Credentials.ClusterName
 		$portNumber = $global:Credentials.PortNumber
 
-		Write-Debug ($global:Credentials|ConvertTo-Json -Depth 10)
+		Write-Debug ($global:Credentials | ConvertTo-Json -Depth 10)
 
 		$TokenHeader = @{
 			Authorization = "Bearer $bearerToken"
@@ -1510,7 +1510,7 @@ function Modify-QQNFSSettings {
 				"v4_enabled" = $true
 			}
 		}
-		elseif ($V4Disabled){
+		elseif ($V4Disabled) {
 			$body += @{
 				"v4_enabled" = $false
 			}
@@ -1521,7 +1521,7 @@ function Modify-QQNFSSettings {
 				"krb5_enabled" = $true
 			}
 		}
-		elseif ($Krb5Disabled){
+		elseif ($Krb5Disabled) {
 			$body += @{
 				"krb5_enabled" = $false
 			}
@@ -1532,7 +1532,7 @@ function Modify-QQNFSSettings {
 				"krb5p_enabled" = $true
 			}
 		}
-		elseif ($Krb5pDisabled){
+		elseif ($Krb5pDisabled) {
 			$body += @{
 				"krb5p_enabled" = $false
 			}
@@ -1543,7 +1543,7 @@ function Modify-QQNFSSettings {
 				"krb5i_enabled" = $true
 			}
 		}
-		elseif ($Krb5iDisabled){
+		elseif ($Krb5iDisabled) {
 			$body += @{
 				"krb5i_enabled" = $false
 			}
@@ -1561,7 +1561,7 @@ function Modify-QQNFSSettings {
 		}
 
 
-		
+
 
 		# API url definition
 		$url = "/v2/nfs/settings"

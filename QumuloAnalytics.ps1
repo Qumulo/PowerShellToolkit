@@ -50,7 +50,7 @@ function Get-QQTimeSeries {
 	}
 
 	try {
-        # Existing BearerToken check
+		# Existing BearerToken check
 		if (!$global:Credentials) {
 			Login-QQCluster
 		}
@@ -107,7 +107,7 @@ function Get-QQCurrentActivity {
 	#>
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $False)][ValidateSet('file-iops-read','file-iops-write','metadata-iops-read','metadata-iops-write','file-throughput-read','file-throughput-write')]  [string]$Type,
+		[Parameter(Mandatory = $False)][ValidateSet('file-iops-read','file-iops-write','metadata-iops-read','metadata-iops-write','file-throughput-read','file-throughput-write')] [string]$Type,
 		[Parameter(Mandatory = $False)] [switch]$Json
 	)
 	if ($SkipCertificateCheck -eq 'true') {
@@ -134,10 +134,10 @@ function Get-QQCurrentActivity {
 		}
 
 		# API url definition
-		if($Type){
+		if ($Type) {
 			$url = "/v1/analytics/activity/current?type=$Type"
 		}
-		else{
+		else {
 			$url = "/v1/analytics/activity/current"
 		}
 
@@ -180,7 +180,7 @@ function Get-QQCapacityHistory {
 	#>
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $True)][ValidateSet('hourly','daily','weekly')]  [string]$Interval,
+		[Parameter(Mandatory = $True)][ValidateSet('hourly','daily','weekly')] [string]$Interval,
 		[Parameter(Mandatory = $True)] [string]$BeginTime,
 		[Parameter(Mandatory = $True)] [string]$EndTime,
 		[Parameter(Mandatory = $False)] [switch]$Json
@@ -298,5 +298,4 @@ function Get-QQFilesCapacityHistory {
 		$_.Exception.Response
 	}
 }
-	
-		
+

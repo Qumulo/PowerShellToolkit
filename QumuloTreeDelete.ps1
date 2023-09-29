@@ -47,7 +47,7 @@ function List-QQTreeDeletes {
 	}
 
 	try {
-        # Existing BearerToken check
+		# Existing BearerToken check
 		if (!$global:Credentials) {
 			Login-QQCluster
 		}
@@ -341,4 +341,4 @@ function Cancel-QQTreeDelete {
 		$_.Exception.Response
 	}
 }
-	
+

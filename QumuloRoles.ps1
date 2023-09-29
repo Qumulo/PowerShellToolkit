@@ -41,14 +41,14 @@ function List-QQRoles {
 
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $False)][switch]$Json
+		[Parameter(Mandatory = $False)] [switch]$Json
 	)
 	if ($SkipCertificateCheck -eq 'true') {
 		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
 	}
 
 	try {
-        # Existing BearerToken check
+		# Existing BearerToken check
 		if (!$global:Credentials) {
 			Login-QQCluster
 		}
@@ -66,14 +66,14 @@ function List-QQRoles {
 			Authorization = "Bearer $bearerToken"
 		}
 
-        # API url definition
+		# API url definition
 		$url = "/v1/auth/roles/"
 
-        # API call ru
+		# API call ru
 		try {
 			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
 
-            # Response
+			# Response
 			if ($Json) {
 				return @($response) | ConvertTo-Json -Depth 10
 			}
@@ -102,61 +102,61 @@ function Get-QQRole {
         Get-QQRole -Name [ROLE_NAME] [-Json]
     #>
 
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $False)][switch]$Json,
-        [Parameter(Mandatory = $True)][string]$Name
-    )
-    if ($SkipCertificateCheck -eq 'true') {
-        $PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
-    }
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $False)] [switch]$Json,
+		[Parameter(Mandatory = $True)] [string]$Name
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
 
-    try {
-        # Existing BearerToken check
-        if (!$global:Credentials) {
-            Login-QQCluster
-        }
-        else {
-            if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
-                Login-QQCluster
-            }
-        }
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
+		}
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+				Login-QQCluster
+			}
+		}
 
-        $bearerToken = $global:Credentials.BearerToken
-        $clusterName = $global:Credentials.ClusterName
-        $portNumber = $global:Credentials.PortNumber
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
 
-        $TokenHeader = @{
-            Authorization = "Bearer $bearerToken"
-        }
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
 
-        # API url definition
-        $RoleName = ([uri]::EscapeDataString($Name))
-        $url = "/v1/auth/roles/$RoleName"
+		# API url definition
+		$RoleName = ([uri]::EscapeDataString($Name))
+		$url = "/v1/auth/roles/$RoleName"
 
-        # API call ru
-        try {
-            $response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+		# API call ru
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
 
-            # Response
-            if ($Json) {
-                return @($response) | ConvertTo-Json -Depth 10
-            }
-            else {
-                return $response
-            }
-        }
-        catch {
-            $_.Exception.Response
-        }
-    }
-    catch {
-        $_.Exception.Response
-    }
+			# Response
+			if ($Json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $response
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
 }
 
 function Get-QQRoleMembers {
-    <#
+<#
         .SYNOPSIS
             List all members of a role.
         .DESCRIPTION
@@ -166,56 +166,56 @@ function Get-QQRoleMembers {
         .EXAMPLE
             Get-QQRoleMembers -Name [ROLE_NAME] [-Json]
         #>
-    
-        [CmdletBinding()]
-        param(
-            [Parameter(Mandatory = $False)][switch]$Json,
-            [Parameter(Mandatory = $True)][string]$Name
-        )
-        if ($SkipCertificateCheck -eq 'true') {
-            $PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
-        }
-    
-        try {
-            # Existing BearerToken check
-            if (!$global:Credentials) {
-                Login-QQCluster
-            }
-            else {
-                if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
-                    Login-QQCluster
-                }
-            }
-    
-            $bearerToken = $global:Credentials.BearerToken
-            $clusterName = $global:Credentials.ClusterName
-            $portNumber = $global:Credentials.PortNumber
-    
-            $TokenHeader = @{
-                Authorization = "Bearer $bearerToken"
-            }
-    
-            # API url definition
-            $RoleName = ([uri]::EscapeDataString($Name))
-            $url = "/v1/auth/roles/$RoleName/members"
-    
-            # API call ru
-            try {
-                $response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
-    
-                # Response
-                if ($Json) {
-                    return @($response.members) | ConvertTo-Json -Depth 10
-                }
-                else {
-                    return $response.members
-                }
-            }
-            catch {
-                $_.Exception.Response
-            }
-        }
-        catch {
-            $_.Exception.Response
-        }
-    }
+
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $False)] [switch]$Json,
+		[Parameter(Mandatory = $True)] [string]$Name
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
+
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
+		}
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+				Login-QQCluster
+			}
+		}
+
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
+
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
+
+		# API url definition
+		$RoleName = ([uri]::EscapeDataString($Name))
+		$url = "/v1/auth/roles/$RoleName/members"
+
+		# API call ru
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+
+			# Response
+			if ($Json) {
+				return @($response.members) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $response.members
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
+}

@@ -41,14 +41,14 @@ function Get-QQTime {
 
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $False)][switch]$Json
+		[Parameter(Mandatory = $False)] [switch]$Json
 	)
 	if ($SkipCertificateCheck -eq 'true') {
 		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
 	}
 
 	try {
-        # Existing BearerToken check
+		# Existing BearerToken check
 		if (!$global:Credentials) {
 			Login-QQCluster
 		}
@@ -66,14 +66,14 @@ function Get-QQTime {
 			Authorization = "Bearer $bearerToken"
 		}
 
-        # API url definition
+		# API url definition
 		$url = "/v1/time/settings"
 
-        # API call ru
+		# API call ru
 		try {
 			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
 
-            # Response
+			# Response
 			if ($Json) {
 				return @($response) | ConvertTo-Json -Depth 10
 			}
@@ -99,61 +99,61 @@ function Get-QQTimeStatus {
     .EXAMPLE
         Get-QQTimeStatus [-Json]
     #>
-    
-    # CmdletBinding parameters
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $False)][switch]$Json
-    )
-    if ($SkipCertificateCheck -eq 'true') {
-        $PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
-    }
 
-    try {
-        # Existing BearerToken check
-        if (!$global:Credentials) {
-            Login-QQCluster
-        }
-        else {
-            if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
-                Login-QQCluster
-            }
-        }
+	# CmdletBinding parameters
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $False)] [switch]$Json
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
 
-        $bearerToken = $global:Credentials.BearerToken
-        $clusterName = $global:Credentials.ClusterName
-        $portNumber = $global:Credentials.PortNumber
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
+		}
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+				Login-QQCluster
+			}
+		}
 
-        $TokenHeader = @{
-            Authorization = "Bearer $bearerToken"
-        }
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
 
-        # API url definition
-        $url = "/v1/time/status"
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
 
-        # API call run
-        try {
-            $response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+		# API url definition
+		$url = "/v1/time/status"
 
-            # Response
-            if ($Json) {
-                return @($response) | ConvertTo-Json -Depth 10
-            }
-            else {
-                return $response
-            }
-        }
-        catch {
-            $_.Exception.Response
-        }
-    }
-    catch {
-        $_.Exception.Response
-    }
+		# API call run
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+
+			# Response
+			if ($Json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $response
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
 }
 
 function Set-QQTime {
-    <#
+<#
         .SYNOPSIS
             Set time configuration.
         .DESCRIPTION
@@ -168,68 +168,68 @@ function Set-QQTime {
              Set-QQTime -NtpServers NTP_SERVERS [-Json]
         #>
 
-        # CmdletBinding parameters
-        [CmdletBinding()]
-        param(
-            [Parameter(Mandatory = $False)][switch]$Json,
-            [Parameter(Mandatory = $False)][bool]$UsedAD,
-            [Parameter(Mandatory = $False)][array]$NtpServers
-        )
-        if ($SkipCertificateCheck -eq 'true') {
-            $PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
-        }
-    
-        try {
-            # Existing BearerToken check
-            if (!$global:Credentials) {
-                Login-QQCluster
-            }
-            else {
-                if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
-                    Login-QQCluster
-                }
-            }
-    
-            $bearerToken = $global:Credentials.BearerToken
-            $clusterName = $global:Credentials.ClusterName
-            $portNumber = $global:Credentials.PortNumber
-    
-            $TokenHeader = @{
-                Authorization = "Bearer $bearerToken"
-            }
-    
-            # API Request Body
-            $body = @{}
-    
-            if($UsedAD -eq $true){$body += @{"use_ad_for_primary" = $true}}
-            else{$body += @{"use_ad_for_primary" = $false}}
-            if($NtpServers){$body += @{"ntp_servers" = $NtpServers}}
+	# CmdletBinding parameters
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $False)] [switch]$Json,
+		[Parameter(Mandatory = $False)] [bool]$UsedAD,
+		[Parameter(Mandatory = $False)] [array]$NtpServers
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
 
-            Write-Debug($body| ConvertTo-Json -Depth 10)
-    
-            # API url definition
-            $url = "/v1/time/settings"
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
+		}
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+				Login-QQCluster
+			}
+		}
 
-            # API call run
-            try {
-                $response = Invoke-RestMethod -SkipCertificateCheck -Method 'PATCH' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
-    
-                # Response
-                if ($Json) {
-                    return @($response) | ConvertTo-Json -Depth 10
-                }
-                else {
-                    return $response
-                }
-            }
-            catch {
-                $_.Exception.Response
-            }
-        }
-        catch {
-            $_.Exception.Response
-        }
-    }
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
+
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
+
+		# API Request Body
+		$body = @{}
+
+		if ($UsedAD -eq $true) { $body += @{ "use_ad_for_primary" = $true } }
+		else { $body += @{ "use_ad_for_primary" = $false } }
+		if ($NtpServers) { $body += @{ "ntp_servers" = $NtpServers } }
+
+		Write-Debug ($body | ConvertTo-Json -Depth 10)
+
+		# API url definition
+		$url = "/v1/time/settings"
+
+		# API call run
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'PATCH' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
+
+			# Response
+			if ($Json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $response
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
+}
 
 function List-QQTimeZones {
 <#
@@ -241,54 +241,54 @@ function List-QQTimeZones {
         List-QQTimeZone [-Json]
     #>
 
-    # CmdletBinding parameters
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $False)][switch]$Json
-    )
-    if ($SkipCertificateCheck -eq 'true') {
-        $PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
-    }
+	# CmdletBinding parameters
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $False)] [switch]$Json
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
 
-    try {
-        # Existing BearerToken check
-        if (!$global:Credentials) {
-            Login-QQCluster
-        }
-        else {
-            if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
-                Login-QQCluster
-            }
-        }
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
+		}
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+				Login-QQCluster
+			}
+		}
 
-        $bearerToken = $global:Credentials.BearerToken
-        $clusterName = $global:Credentials.ClusterName
-        $portNumber = $global:Credentials.PortNumber
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
 
-        $TokenHeader = @{
-            Authorization = "Bearer $bearerToken"
-        }
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
 
-        # API url definition
-        $url = "/v1/time/timezones"
+		# API url definition
+		$url = "/v1/time/timezones"
 
-        # API call run	
-        try {
-            $response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+		# API call run	
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
 
-            # Response
-            if ($Json) {
-                return @($response) | ConvertTo-Json -Depth 10
-            }
-            else {
-                return $response
-            }
-        }
-        catch {
-            $_.Exception.Response
-        }
-    }
-    catch {
-        $_.Exception.Response
-    }
+			# Response
+			if ($Json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $response
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
 }

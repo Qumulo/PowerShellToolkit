@@ -1,4 +1,4 @@
-<#
+﻿<#
 	===========================================================================
 	Created by:   	berat.ulualan@qumulo.com
 	Organization: 	Qumulo, Inc.
@@ -549,7 +549,7 @@ function Get-QQTargetRelationshipStatus {
 # 				$htmlPath = ([uri]::EscapeDataString($localpath))
 # 				# API url definition
 # 				$url = "/v1/files/$htmlPath/info/attributes"
-				
+
 # 				# API call run
 # 				try {
 # 					$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
@@ -660,7 +660,7 @@ function Get-QQTargetRelationshipStatus {
 # 		# API call run
 # 		try {
 # 			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'DELETE' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
-			
+
 # 			#  Response
 # 			return ("$id was deleted successfully.")
 # 		}
@@ -722,7 +722,7 @@ function Get-QQTargetRelationshipStatus {
 
 # 			# API url definition
 # 			$url = "/v3/replication/object-relationships/$id/status"
-			
+
 # 			# API call run
 # 			try {
 # 				$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
@@ -789,14 +789,14 @@ function Get-QQTargetRelationshipStatus {
 
 # 		# API url definition
 # 		$url = "/v3/replication/object-relationships/$id/abort-replication"
-		
+
 # 		# API call run
 # 		try {
 # 			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'POST' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
 
 # 			# API url definition
 # 			$url = "/v3/replication/object-relationships/$id/status"
-			
+
 # 			# API call run
 # 			try {
 # 				$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop

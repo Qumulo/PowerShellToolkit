@@ -268,7 +268,7 @@ function Create-QQDirQuota {
 				"limit" = [string]$limit_in_bytes
 			}
 
-			Write-Debug($body| ConvertTo-Json -Depth 10)
+			Write-Debug ($body | ConvertTo-Json -Depth 10)
 
 			# API url definition
 			$url = "/v1/files/quotas/"
@@ -325,7 +325,7 @@ function Update-QQDirQuota {
 		[Parameter(Mandatory = $True)][ValidateNotNullOrEmpty()] [string]$Limit,
 		[Parameter(Mandatory = $False)] [switch]$Json
 	)
-	
+
 	if ($SkipCertificateCheck -eq 'true') {
 		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
 	}
@@ -355,7 +355,7 @@ function Update-QQDirQuota {
 				$htmlPath = ([uri]::EscapeDataString($path))
 				# API url definition		
 				$url = "/v1/files/$htmlPath/info/attributes"
-				
+
 				# API call run
 				try {
 					$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
@@ -375,11 +375,11 @@ function Update-QQDirQuota {
 				"limit" = [string]$limit_in_bytes
 			}
 
-			Write-Debug($body| ConvertTo-Json -Depth 10)
+			Write-Debug ($body | ConvertTo-Json -Depth 10)
 
 			# API url definition
 			$url = "/v1/files/quotas/$id"
-			
+
 			# API call run
 			try {
 				$response = Invoke-RestMethod -SkipCertificateCheck -Method 'PUT' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
@@ -470,7 +470,7 @@ function Delete-QQDirQuota {
 
 			# API url definition
 			$url = "/v1/files/quotas/$id"
-			
+
 			# API call run
 			try {
 				$response = Invoke-RestMethod -SkipCertificateCheck -Method 'DELETE' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
