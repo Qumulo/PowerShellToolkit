@@ -125,7 +125,7 @@
 	'List-QQAccessTokens','Get-QQAccessToken','Create-QQAccessToken','Modify-QQAccessToken','Verify-QQUgradeImage','Prepare-QQUgrade',
 	'Delete-QQAccessToken','Commit-QQUgrade','Get-QQUpgradeStatus','List-QQTenants','Set-QQMultitenancy','Get-QQTenant',
 	'Create-QQTenant','Delete-QQTenant',
-	'List-NFSExports','Get-QQNFSExport','Delete-QQNFSExport','Add-QQNFSExport','Modify-QQNFSExport',
+	'List-QQNFSExports','Get-QQNFSExport','Delete-QQNFSExport','Add-QQNFSExport','Modify-QQNFSExport',
 	'Add-QQNFSExportHostAccess','List-QQNFSExportHostAccess','Modify-QQNFSExportHostAccess','Remove-QQNFSExportHostAccess',
 	'Get-QQNFSSettings','Modify-QQNFSSettings '
 
