@@ -71,30 +71,17 @@ function List-QQNFSExports {
 			Authorization = "Bearer $bearerToken"
 		}
 
-		# Multi-tenancy check
-		$url = "/v1/multitenancy/tenants/"
-		$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
-		$entries = $response.entries
-		Write-Debug ($response | ConvertTo-Json -Depth 10)
-
-		# API url definition
-		if ($entries.Count -eq 1) {
-			$url = "/v2/nfs/exports/"
-		}
-		else {
-			$url = "/v3/nfs/exports/"
-		}
-
+		$url = "/v3/nfs/exports/"
 		# API call run
 		try {
 			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
 
 			# Response
 			if ($Json) {
-				return @($response) | ConvertTo-Json -Depth 10
+				return @($response.entries) | ConvertTo-Json -Depth 10
 			}
 			else {
-				return $response
+				return $response.entries
 			}
 		}
 		catch {
@@ -125,7 +112,8 @@ function Get-QQNFSExport {
 	[CmdletBinding()]
 	param(
 		[Parameter(Mandatory = $True,ParameterSetName = "ExportId")] [string]$ExportId,
-		[Parameter(Mandatory = $True,ParameterSetName = "Name")] [string]$ExportPath,
+		[Parameter(Mandatory = $True,ParameterSetName = "ExportPath")] [string]$ExportPath,
+		[Parameter(Mandatory = $True,ParameterSetName = "ExportPath")] [int16]$TenantID,
 		[Parameter(Mandatory = $False)] [switch]$Json
 	)
 	if ($SkipCertificateCheck -eq 'true') {
@@ -133,6 +121,7 @@ function Get-QQNFSExport {
 	}
 
 	try {
+		$foundShare = 0
 		# Existing BearerToken check
 		if (!$global:Credentials) {
 			Login-QQCluster
@@ -153,19 +142,7 @@ function Get-QQNFSExport {
 			Authorization = "Bearer $bearerToken"
 		}
 
-		# Multi-tenancy check
-		$url = "/v1/multitenancy/tenants/"
-		$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
-		$entries = $response.entries
-		Write-Debug ($response | ConvertTo-Json -Depth 10)
-
-		# API url definition
-		if ($entries.Count -eq 1) {
-			$url = "/v2/nfs/exports/"
-		}
-		else {
-			$url = "/v3/nfs/exports/"
-		}
+		$url = "/v3/nfs/exports/"
 
 		# API url definition
 		if ($ExportId) {
@@ -179,11 +156,18 @@ function Get-QQNFSExport {
 
 				# Response
 				$nfsExports = $response.entries
+
 				foreach ($export in $nfsExports) {
-					if ($ExportPath -eq $export.export_path) {
+					if (($ExportPath -eq $export.export_path) -and ($TenantID -eq $export.tenant_id)) {
 						$ExportId = $export.id
 						$url += $ExportId
+						$foundShare = 1
 					}
+				}
+
+				if ($foundShare -eq 0) {
+					Write-Error "No matching export found. Check the export path and tenant id."
+					return
 				}
 			}
 			catch {
@@ -248,7 +232,7 @@ function Add-QQNFSExport {
 		[Parameter(Mandatory = $False)] [bool]$CreateFSPath = $False,
 		[Parameter(Mandatory = $False)] [string]$Description,
 		[Parameter(Mandatory = $False)] [bool]$ReadOnly = $False,
-		[Parameter(Mandatory = $False)] [string]$TenantID,
+		[Parameter(Mandatory = $True)] [int16]$TenantID,
 		[Parameter(Mandatory = $False)] [switch]$Json
 	)
 	if ($SkipCertificateCheck -eq 'true') {
@@ -256,6 +240,7 @@ function Add-QQNFSExport {
 	}
 
 	try {
+		$foundShare = 1
 		# Existing BearerToken check
 		if (!$global:Credentials) {
 			Login-QQCluster
@@ -276,20 +261,7 @@ function Add-QQNFSExport {
 			Authorization = "Bearer $bearerToken"
 		}
 
-		# Multi-tenancy check
-		$url = "/v1/multitenancy/tenants/"
-		$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
-		$entries = $response.entries
-		Write-Debug ($response | ConvertTo-Json -Depth 10)
-
-		# API url definition
-		if ($entries.Count -eq 1) {
-			$url = "/v2/nfs/exports/"
-		}
-		else {
-			$url = "/v3/nfs/exports/"
-		}
-
+		$url = "/v3/nfs/exports/"
 
 		# API url definition
 		if ($CreateFSPath) {
@@ -361,14 +333,16 @@ function Delete-QQNFSExport {
 	# CmdletBinding parameters.
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $True,ParameterSetName = "Id")] [string]$Id,
-		[Parameter(Mandatory = $True,ParameterSetName = "ExportPath")] [string]$ExportPath
+		[Parameter(Mandatory = $True,ParameterSetName = "ExportId")] [string]$ExportId,
+		[Parameter(Mandatory = $True,ParameterSetName = "ExportPath")] [string]$ExportPath,
+		[Parameter(Mandatory = $True,ParameterSetName = "ExportPath")] [int16]$TenantID
 	)
 	if ($SkipCertificateCheck -eq 'true') {
 		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
 	}
 
 	try {
+		$foundShare = 1
 		# Existing BearerToken check	
 		if (!$global:Credentials) {
 			Login-QQCluster
@@ -389,20 +363,7 @@ function Delete-QQNFSExport {
 			Authorization = "Bearer $bearerToken"
 		}
 
-		# Multi-tenancy check
-		$url = "/v1/multitenancy/tenants/"
-		$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
-		$entries = $response.entries
-		Write-Debug ($response | ConvertTo-Json -Depth 10)
-
-		# API url definition
-		if ($entries.Count -eq 1) {
-			$url = "/v2/nfs/exports/"
-		}
-		else {
-			$url = "/v3/nfs/exports/"
-		}
-
+		$url = "/v3/nfs/exports/"
 		# API url definition
 		if ($ExportId) {
 			$url += $ExportId
@@ -416,10 +377,16 @@ function Delete-QQNFSExport {
 				# Response
 				$nfsExports = $response.entries
 				foreach ($export in $nfsExports) {
-					if ($ExportPath -eq $export.export_path) {
+					if (($ExportPath -eq $export.export_path) -and ($TenantID -eq $export.tenant_id)) {
 						$ExportId = $export.id
 						$url += $ExportId
+						$foundShare = 1
 					}
+				}
+
+				if ($foundShare -eq 0) {
+					Write-Error "No matching export found. Check the export path and tenant id."
+					return
 				}
 			}
 			catch {
@@ -482,12 +449,12 @@ function Modify-QQNFSExport {
 	# CmdletBinding parameters.
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $False)] [string]$ExportPath,
-		[Parameter(Mandatory = $False)] [string]$ExportId,
+		[Parameter(Mandatory = $True,ParameterSetName = "ExportId")] [string]$ExportId,
+		[Parameter(Mandatory = $True,ParameterSetName = "ExportPath")] [string]$ExportPath,
+		[Parameter(Mandatory = $True,ParameterSetName = "ExportPath")] [int16]$TenantID,
 		[Parameter(Mandatory = $False)] [string]$NewFsPath,
 		[Parameter(Mandatory = $False)] [bool]$CreateFSPath = $False,
 		[Parameter(Mandatory = $False)] [string]$Description,
-		[Parameter(Mandatory = $False)] [string]$TenantID,
 		[Parameter(Mandatory = $False)] [string]$NewExportPath,
 		[Parameter(Mandatory = $False)] [string]$NewTenantID
 	)
@@ -496,6 +463,7 @@ function Modify-QQNFSExport {
 	}
 
 	try {
+		$foundShare = 1
 		# Existing BearerToken check
 		if (!$global:Credentials) {
 			Login-QQCluster
@@ -516,20 +484,7 @@ function Modify-QQNFSExport {
 			Authorization = "Bearer $bearerToken"
 		}
 
-		# Multi-tenancy check
-		$url = "/v1/multitenancy/tenants/"
-		$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
-		$entries = $response.entries
-		Write-Debug ($response | ConvertTo-Json -Depth 10)
-
-		# API url definition
-		if ($entries.Count -eq 1) {
-			$url = "/v2/nfs/exports/"
-		}
-		else {
-			$url = "/v3/nfs/exports/"
-		}
-
+		$url = "/v3/nfs/exports/"
 		if ($ExportId) {
 			$url += $ExportId
 		}
@@ -542,10 +497,16 @@ function Modify-QQNFSExport {
 				# Response
 				$nfsExports = $response.entries
 				foreach ($export in $nfsExports) {
-					if ($ExportPath -eq $export.export_path) {
+					if (($ExportPath -eq $export.export_path) -and ($TenantID -eq $export.tenant_id)) {
 						$ExportId = $export.id
 						$url += $ExportId
+						$foundShare = 1
 					}
+				}
+
+				if ($foundShare -eq 0) {
+					Write-Error "No matching export found. Check the export path and tenant id."
+					return
 				}
 			}
 			catch {
@@ -619,6 +580,8 @@ function Add-QQNFSExportHostAccess {
 			The NFS export path
 		.PARAMETER TenantId [TENANT_ID]
 			ID of the tenant the export is in. Only used if using the -ExportPath argument.
+		.PARAMETER DeleteDefaultHostAccess
+			Delete the default host access rule. 
 		.PARAMETER HostRestrictions [HOSTS]
 			Individual IP addresses, CIDR masks (e.g. 10.1.2.0/24), or ranges (e.g. 10.2.3.23-47, fd00::42:1fff-c000). Export will match all by default.
 		.PARAMETER Readonly [$true|$false]
@@ -643,10 +606,11 @@ function Add-QQNFSExportHostAccess {
 	# CmdletBinding parameters.
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $False)] [string]$ExportPath,
-		[Parameter(Mandatory = $False)] [string]$ExportId,
-		[Parameter(Mandatory = $False)] [string]$TenantID,
+		[Parameter(Mandatory = $True,ParameterSetName = "ExportId")] [string]$ExportId,
+		[Parameter(Mandatory = $True,ParameterSetName = "ExportPath")] [string]$ExportPath,
+		[Parameter(Mandatory = $True,ParameterSetName = "ExportPath")] [int16]$TenantID,
 		[Parameter(Mandatory = $False)] [array]$HostRestrictions,
+		[Parameter(Mandatory = $False)] [switch]$DeleteDefaultHostAccess,
 		[Parameter(Mandatory = $False)] [switch]$ReadOnly,
 		[Parameter(Mandatory = $False)] [switch]$RootSquash,
 		[Parameter(Mandatory = $False)] [switch]$AllSquash,
@@ -658,6 +622,7 @@ function Add-QQNFSExportHostAccess {
 	}
 
 	try {
+		$foundShare = 1
 		# Existing BearerToken check
 		if (!$global:Credentials) {
 			Login-QQCluster
@@ -678,19 +643,8 @@ function Add-QQNFSExportHostAccess {
 			Authorization = "Bearer $bearerToken"
 		}
 
-		# Multi-tenancy check
-		$tenant_url = "/v1/multitenancy/tenants/"
-		$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$tenant_url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
-		$tenants = $response.entries
-		Write-Debug ($response | ConvertTo-Json -Depth 10)
 
-		# API url definition
-		if ($tenants.Count -eq 1) {
-			$url = "/v2/nfs/exports/"
-		}
-		else {
-			$url = "/v3/nfs/exports/"
-		}
+		$url = "/v3/nfs/exports/"
 
 
 
@@ -715,12 +669,18 @@ function Add-QQNFSExportHostAccess {
 				# Response
 				$nfsExports = $response.entries
 				foreach ($export in $nfsExports) {
-					if ($ExportPath -eq $export.export_path) {
+					if (($ExportPath -eq $export.export_path) -and ($TenantID -eq $export.tenant_id)) {
 						$ExportId = $export.id
 						$existingRestrictions = $export.restrictions
 						$url += $ExportId
 						$url += "?allow-fs-path-create=false"
+						$foundShare = 1
 					}
+				}
+
+				if ($foundShare -eq 0) {
+					Write-Error "No matching export found. Check the export path and tenant id."
+					return
 				}
 			}
 		}
@@ -730,6 +690,21 @@ function Add-QQNFSExportHostAccess {
 
 		Write-Debug ($url)
 		# API Request body
+
+		if ($DeleteDefaultHostAccess) {
+			$tempRestrictions = @()
+			foreach ($restriction in $existingRestrictions) {
+				Write-Host ($restriction.host_restrictions[0])
+				if (($restriction.host_restrictions.Count -eq 0) -and ($restriction.user_mapping -eq "NFS_MAP_NONE") -and ($restriction.read_only -eq $false))
+				{
+					Write-Host ("The default host access rule has been removed...")
+				}
+				else {
+					$tempRestrictions += $restriction
+				}
+			}
+			$existingRestrictions = $tempRestrictions
+		}
 
 		$newRestriction = @{}
 
@@ -830,9 +805,9 @@ function List-QQNFSExportHostAccess {
 	# CmdletBinding parameters.
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $False)] [string]$ExportPath,
-		[Parameter(Mandatory = $False)] [string]$ExportId,
-		[Parameter(Mandatory = $False)] [string]$TenantID
+		[Parameter(Mandatory = $True,ParameterSetName = "ExportId")] [string]$ExportId,
+		[Parameter(Mandatory = $True,ParameterSetName = "ExportPath")] [string]$ExportPath,
+		[Parameter(Mandatory = $True,ParameterSetName = "ExportPath")] [int16]$TenantID
 
 	)
 	if ($SkipCertificateCheck -eq 'true') {
@@ -840,6 +815,7 @@ function List-QQNFSExportHostAccess {
 	}
 
 	try {
+		$foundShare = 1
 		# Existing BearerToken check
 		if (!$global:Credentials) {
 			Login-QQCluster
@@ -860,20 +836,7 @@ function List-QQNFSExportHostAccess {
 			Authorization = "Bearer $bearerToken"
 		}
 
-		# Multi-tenancy check
-		$url = "/v1/multitenancy/tenants/"
-		$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
-		$entries = $response.entries
-		Write-Debug ($response | ConvertTo-Json -Depth 10)
-
-		# API url definition
-		if ($entries.Count -eq 1) {
-			$url = "/v2/nfs/exports/"
-		}
-		else {
-			$url = "/v3/nfs/exports/"
-		}
-
+		$url = "/v3/nfs/exports/"
 
 
 		# API call run
@@ -894,7 +857,7 @@ function List-QQNFSExportHostAccess {
 				# Response
 				$nfsExports = $response.entries
 				foreach ($export in $nfsExports) {
-					if ($ExportPath -eq $export.export_path) {
+					if (($ExportPath -eq $export.export_path) -and ($TenantID -eq $export.tenant_id)) {
 						$existingRestrictions = $export.restrictions
 						$i = 1
 						$existingRestrictionsWPosition = @()
@@ -908,7 +871,13 @@ function List-QQNFSExportHostAccess {
 							$i = $i + 1
 						}
 						Write-Host ($existingRestrictionsWPosition | ConvertTo-Json -Depth 10)
+						$foundShare = 1
 					}
+				}
+
+				if ($foundShare -eq 0) {
+					Write-Error "No matching export found. Check the export path and tenant id."
+					return
 				}
 			}
 		}
@@ -961,9 +930,9 @@ function Modify-QQNFSExportHostAccess {
 	# CmdletBinding parameters.
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $False)] [string]$ExportPath,
-		[Parameter(Mandatory = $False)] [string]$ExportId,
-		[Parameter(Mandatory = $False)] [string]$TenantID,
+		[Parameter(Mandatory = $True,ParameterSetName = "ExportId")] [string]$ExportId,
+		[Parameter(Mandatory = $True,ParameterSetName = "ExportPath")] [string]$ExportPath,
+		[Parameter(Mandatory = $True,ParameterSetName = "ExportPath")] [int16]$TenantID,
 		[Parameter(Mandatory = $True)] [string]$Position,
 		[Parameter(Mandatory = $False)] [array]$HostRestrictions,
 		[Parameter(Mandatory = $False)] [switch]$ReadOnly,
@@ -977,6 +946,7 @@ function Modify-QQNFSExportHostAccess {
 	}
 
 	try {
+		$foundShare = 1
 		# Existing BearerToken check
 		if (!$global:Credentials) {
 			Login-QQCluster
@@ -1095,7 +1065,7 @@ function Modify-QQNFSExportHostAccess {
 				# Response
 				$nfsExports = $response.entries
 				foreach ($export in $nfsExports) {
-					if ($ExportPath -eq $export.export_path) {
+					if (($ExportPath -eq $export.export_path) -and ($TenantID -eq $export.tenant_id)) {
 						$ExportId = $export.id
 						$existingRestrictions = $export.restrictions
 						$url += $ExportId
@@ -1160,7 +1130,13 @@ function Modify-QQNFSExportHostAccess {
 							}
 							$i = $i + 1
 						}
+						$foundShare = 1
 					}
+				}
+
+				if ($foundShare -eq 0) {
+					Write-Error "No matching export found. Check the export path and tenant id."
+					return
 				}
 			}
 		}
@@ -1221,9 +1197,9 @@ function Remove-QQNFSExportHostAccess {
 	# CmdletBinding parameters.
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $False)] [string]$ExportPath,
-		[Parameter(Mandatory = $False)] [string]$ExportId,
-		[Parameter(Mandatory = $False)] [string]$TenantID,
+		[Parameter(Mandatory = $True,ParameterSetName = "ExportId")] [string]$ExportId,
+		[Parameter(Mandatory = $True,ParameterSetName = "ExportPath")] [string]$ExportPath,
+		[Parameter(Mandatory = $True,ParameterSetName = "ExportPath")] [int16]$TenantID,
 		[Parameter(Mandatory = $True)] [string]$Position
 
 	)
@@ -1232,6 +1208,7 @@ function Remove-QQNFSExportHostAccess {
 	}
 
 	try {
+		$foundShare = 1
 		# Existing BearerToken check
 		if (!$global:Credentials) {
 			Login-QQCluster
@@ -1252,20 +1229,7 @@ function Remove-QQNFSExportHostAccess {
 			Authorization = "Bearer $bearerToken"
 		}
 
-		# Multi-tenancy check
-		$url = "/v1/multitenancy/tenants/"
-		$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
-		$entries = $response.entries
-		Write-Debug ($response | ConvertTo-Json -Depth 10)
-
-		# API url definition
-		if ($entries.Count -eq 1) {
-			$url = "/v2/nfs/exports/"
-		}
-		else {
-			$url = "/v3/nfs/exports/"
-		}
-
+		$url = "/v3/nfs/exports/"
 
 
 		# API call run
@@ -1298,7 +1262,7 @@ function Remove-QQNFSExportHostAccess {
 				# Response
 				$nfsExports = $response.entries
 				foreach ($export in $nfsExports) {
-					if ($ExportPath -eq $export.export_path) {
+					if (($ExportPath -eq $export.export_path) -and ($TenantID -eq $export.tenant_id)) {
 						$ExportId = $export.id
 						$existingRestrictions = $export.restrictions
 						$url += $ExportId
@@ -1312,7 +1276,13 @@ function Remove-QQNFSExportHostAccess {
 							}
 							$i = $i + 1
 						}
+						$foundShare = 1
 					}
+				}
+
+				if ($foundShare -eq 0) {
+					Write-Error "No matching export found. Check the export path and tenant id."
+					return
 				}
 			}
 		}

@@ -471,148 +471,340 @@ function Get-QQTargetRelationshipStatus {
 	}
 }
 
-# function Create-QQObjectRelationship {
-# <#
-#     .SYNOPSIS
-#         Create a new object replication relationship. Replication will automatically start after the relationship is created.
-#     .DESCRIPTION
-#         Create a new object replication relationship. Replication will automatically start after the relationship is created.
-# 	.PARAMETER LocalDirectoryId [LOCAL_DIRECTORY_ID] 
-# 		File ID of the qumulo directory if local_directory_path is not provided
-# 	.PARAMETER LocalDirectoryPath [LOCAL_DIRECTORY_PATH]
-# 		Path of the qumulo directory if local_directory_id is not provided
-#     .PARAMETER Direction [COPY_TO_OBJECT|COPY_FROM_OBJECT]
-# 		Whether data is to be copied to, or from, the object store COPY_FROM_OBJECT or COPY_TO_OBJECT
-#     .PARAMETER ObjectFolder [OBJECT_FOLDER]
-# 		Folder to use in the object store bucket. A slash separator is automatically used to specify a 'folder' in a bucket.
-# 	.PARAMETER Bucket [BUCKET]
-# 		Bucket in the object store to use for this relationship
-#     .PARAMETER Region [REGION]
-# 		Region the bucket is located in
-#     .PARAMETER AccessKeyId [ACCESS_KEY_ID]
-# 		Access key ID to use when communicating with the object store
-#     .PARAMETER SecretAccessKey [SECRET_ACCESS_KEY]
-# 		Secret access key to use when communicating with the object store
-#     .PARAMETER ObjectStoreAddress [OBJECT_STORE_ADDRESS]
-# 		S3-compatible server address. For Amazon S3, use s3.<region>.amazonaws.com (e.g., s3.us-west-2.amazonaws.com).         
-#     .PARAMETER UsePort [USE_PORT]
-# 		HTTPS port to use when communicating with the object store (default: 443)
-#     .PARAMETER CACertificate [CA_CERTIFICATE]
-# 		Public certificate of the certificate authority to trust for connections to the object store, in PEM format (defaults to built-in trusted public CAs)        
-#     .PARAMETER BucketAddressingStyle [BUCKET_STYLE_PATH|BUCKET_STYLE_VIRTUAL_HOSTED]
-# 		Addressing style for requests to the bucket. Set to BUCKET_STYLE_PATH for path-style addressing or BUCKET_STYLE_VIRTUAL_HOSTED for virtual hosted-style (the default).
-#     #>
-# 	# CmdletBinding parameters
-# 	[CmdletBinding()]
-# 	param(
-# 		[Parameter(Mandatory = $True,ParameterSetName = "LocalDirectoryId")] [string]$LocalId,
-# 		[Parameter(Mandatory = $True,ParameterSetName = "LocalDirectoryPath")] [string]$LocalPath,
-# 		[Parameter(Mandatory = $True)][ValidateSet("Copy_From_Object","Copy_To_Object")][string]$Direction,
-# 		[Parameter(Mandatory = $True)] [string]$ObjectFolder,
-# 		[Parameter(Mandatory = $True)] [string]$Bucket,
-# 		[Parameter(Mandatory = $True)] [string]$Region,
-# 		[Parameter(Mandatory = $True)] [string]$AccessKeyId,
-# 		[Parameter(Mandatory = $True)] [string]$SecretAccessKey,
-# 		[Parameter(Mandatory = $False)] [string]$ObjectStoreAddress,
-# 		[Parameter(Mandatory = $False)] [int32]$UsePort=443,
-# 		[Parameter(Mandatory = $False)] [string]$CACertificate,
-# 		[Parameter(Mandatory = $False)][ValidateSet("Bucket_Style_Path","Bucket_Style_Virtual_Hosted")][string]$BucketAddressingStyle= "BUCKET_STYLE_VIRTUAL_HOSTED",
-# 		[Parameter(Mandatory = $False)] [switch]$Json
-# 	)
-# 	if ($SkipCertificateCheck -eq 'true') {
-# 		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
-# 	}
+function Create-QQSourceRelationship {
+<#
+    .SYNOPSIS
+        Create a new replication relationship. You need to authorize the relationship on the target cluster after this.
+    .DESCRIPTION
+        Create a new object replication relationship. You need to authorize the relationship on the target cluster after this.
+	.PARAMETER SourceDirectoryId [SOURCE_DIRECTORY_ID] 
+		File ID of the source directory
+	.PARAMETER SourceDirectoryPath [SOURCE_DIRECTORY_PATH]
+		Path to the source directory
+    .PARAMETER TargetDirectoryPath [TARGET_DIRECTORY_PATH]
+		Path to the target directory       
+    .PARAMETER TargetClusterAddress [TARGET_CLUSTER_ADDRESS]
+		The target IP address
+    .PARAMETER TargetPort [Target_PORT]
+		Network port to replicate to on the target (overriding default)
+    .PARAMETER EnableReplication [$True|$False]
+		Enable replication
+    .PARAMETER SetSourceDirectroyReadOnly [$True|$False]
+		Set source directory read only
+    .PARAMETER MapLocalNFSIds [$True|$False]
+		Map local ids to NFS ids
+    #>
+	# CmdletBinding parameters
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $True,ParameterSetName = "SourceDirectoryId")] [string]$SourceDirectoryId,
+		[Parameter(Mandatory = $True,ParameterSetName = "SourceDirectoryPath")] [string]$SourceDirectoryPath,
+		[Parameter(Mandatory = $True)] [string]$TargetDirectoryPath,
+		[Parameter(Mandatory = $True)] [string]$TargetClusterAddress,
+		[Parameter(Mandatory = $False)] [string]$TargetPort = "3712",
+		[Parameter(Mandatory = $False)] [bool]$EnableReplication = $True,
+		[Parameter(Mandatory = $False)] [bool]$SetSourceDirectroyReadOnly = $False,
+		[Parameter(Mandatory = $False)] [bool]$MapLocalNFSIds = $True,
+		[Parameter(Mandatory = $False)] [switch]$Json
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
 
-# 	try {
-# 		# Existing BearerToken check
-# 		if (!$global:Credentials) {
-# 			Login-QQCluster
-# 		}
-# 		else {
-# 			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
-# 				Login-QQCluster
-# 			}
-# 		}
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
+		}
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+				Login-QQCluster
+			}
+		}
 
-# 		$bearerToken = $global:Credentials.BearerToken
-# 		$clusterName = $global:Credentials.ClusterName
-# 		$portNumber = $global:Credentials.PortNumber
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
 
-# 		$TokenHeader = @{
-# 			Authorization = "Bearer $bearerToken"
-# 		}
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
 
-# 		# API Request body
+		# API Request body
+		$body = @{
+			"source_root_path" = $SourceDirectoryPath
+			"target_root_path" = $TargetDirectoryPath
+			"target_address" = $TargetClusterAddress
+			"target_port" = $TargetPort
+			"map_local_ids_to_nfs_ids" = $MapLocalNFSIds
+			"replication_enabled" = $EnableReplication
+		}
 
-# 		# Local file path -> Local file Id conversion 
-# 			if ($localpath) {
-# 				$htmlPath = ([uri]::EscapeDataString($localpath))
-# 				# API url definition
-# 				$url = "/v1/files/$htmlPath/info/attributes"
+		Write-Debug ($body | ConvertTo-Json -Depth 10)
 
-# 				# API call run
-# 				try {
-# 					$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
-# 					$localid = $($response.id)
-# 				}
-# 				catch {
-# 					$_.Exception.Response
-# 				}
-# 			}
+		# API url definition
+		$url = "/v2/replication/source-relationships/"
 
-# 			if (!$bucketaddressingstyle) {
-# 				$bucketaddressingstyle = "BUCKET_STYLE_VIRTUAL_HOSTED"
-# 			}
+		# API call run
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'POST' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
 
-# 			if (!$useport) {
-# 				$useport = 443
-# 			}
+			if ($json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $response
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
+}
 
-# 			if (!$objectstoreaddress) {
-# 				$objectstoreaddress = "s3.$region.amazonaws.com"
-# 			}
+function Authorize-QQRelationship {
+<#
+	.SYNOPSIS
+		Authorize the specified replication relationship, establishing this cluster as the target of replication.
+	.DESCRIPTION
+		Authorize the specified replication relationship, establishing this cluster as the target of replication.
+	.PARAMETER RelationshipId [RELATIONSHIP_ID] 
+		Unique identifier of the target replication relationship
+	.PARAMETER AllowNonEmptyDirectory 
+		Allow the replication relationship to be authorized on a target directory containing existing data. Existing data in the target
+        directory may be deleted or overwritten. If you wish to preserve this data, consider taking a snapshot before authorizing.
+	.PARAMETER AllowFSPathCreate
+		Set source directory read only
+	#>
+	# CmdletBinding parameters
+	[CmdletBinding()]
+	param(
 
-# 			$body = @{
-# 				"access_key_id" = $AccessKeyId
-# 				"secret_access_key" = $SecretAccessKey
-# 				"bucket" = $Bucket
-# 				"port" = $UsePort
-# 				"region" = $Region
-# 				"direction" = $Direction.ToUpper()
-# 				"local_directory_id" = $LocalId
-# 				"object_folder" = $ObjectFolder
-# 				"object_store_address" = $ObjectStoreAddress
-# 				"bucket_style" = $BucketAddressingStyle
-# 			}
+		[Parameter(Mandatory = $True)] [string]$RelationshipID,
+		[Parameter(Mandatory = $False)] [bool]$AllowNonEmptyDirectory = $False,
+		[Parameter(Mandatory = $False)] [bool]$AllowFSPathCreate = $False,
+		[Parameter(Mandatory = $False)] [switch]$Json
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
 
-# 			if ($CACertificate) {
-# 				$body += @{ "ca_certificate" = $CACertificate }
-# 			}
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
+		}
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+				Login-QQCluster
+			}
+		}
 
-# 			Write-Debug($body| ConvertTo-Json -Depth 10)
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
 
-# 			# API url definition
-# 			$url = "/v3/replication/object-relationships/"
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
 
-# 			# API call run
-# 			try {
-# 				$response = Invoke-RestMethod -SkipCertificateCheck -Method 'POST' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
+		# API url definition
+		$url = "/v2/replication/target-relationships/$RelationshipID/"
 
-# 				if ($json) {
-# 					return @($response) | ConvertTo-Json -Depth 10
-# 				}
-# 				else {
-# 					return $response
-# 				}
-# 			}
-# 			catch {
-# 				$_.Exception.Response
-# 			}
-# 	}
-# 	catch {
-# 		$_.Exception.Response
-# 	}
-# }
+		if ($AllowNonEmptyDirectory) {
+			$url += "authorize?allow-non-empty-directory=true&"
+		}
+		else {
+			$url += "authorize?allow-non-empty-directory=false&"
+		}
+
+		if ($AllowFSPathCreate) {
+			$url += "allow-fs-path-create=true"
+		}
+		else {
+			$url += "allow-fs-path-create=false"
+		}
+
+		Write-Debug ($url | ConvertTo-Json -Depth 10)
+
+
+
+		# API call run
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'POST' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
+
+			if ($json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $response
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
+}
+
+function Delete-QQSourceRelationship {
+<#
+	.SYNOPSIS
+		Delete the specified source replication relationship.
+	.DESCRIPTION
+		Delete the specified source replication relationship.
+	.PARAMETER RelationshipId [RELATIONSHIP_ID] 
+		Unique identifier of the source replication relationship
+	.PARAMETER Force
+		Do not prompt
+	#>
+	# CmdletBinding parameters
+	[CmdletBinding()]
+	param(
+
+		[Parameter(Mandatory = $True)] [string]$RelationshipID,
+		[Parameter(Mandatory = $False)] [switch]$Force,
+		[Parameter(Mandatory = $False)] [switch]$Json
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
+
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
+		}
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+				Login-QQCluster
+			}
+		}
+
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
+
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
+
+		# API url definition
+		$url = "/v2/replication/source-relationships/$RelationshipID"
+
+		if (-not $Force) {
+			$confirmation = Read-Host "Proceed with deletion? (yes/no)"
+			if (-not ($confirmation -eq 'yes')) {
+				Write-Error "Canceling the source replication delete  request..."; return
+			}
+		}
+
+
+		Write-Debug ($url | ConvertTo-Json -Depth 10)
+
+
+
+		# API call run
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'DELETE' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
+
+			if ($json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $response
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
+}
+
+function Delete-QQTargetRelationship {
+<#
+	.SYNOPSIS
+		Delete the specified target replication relationship.
+	.DESCRIPTION
+		Delete the specified target replication relationship.
+	.PARAMETER RelationshipId [RELATIONSHIP_ID] 
+		Unique identifier of the target replication relationship
+	.PARAMETER Force
+		Do not prompt
+	#>
+	# CmdletBinding parameters
+	[CmdletBinding()]
+	param(
+
+		[Parameter(Mandatory = $True)] [string]$RelationshipID,
+		[Parameter(Mandatory = $False)] [switch]$Force,
+		[Parameter(Mandatory = $False)] [switch]$Json
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
+
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
+		}
+		else {
+			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+				Login-QQCluster
+			}
+		}
+
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
+
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
+
+		# API url definition
+		$url = "/v2/replication/source-relationships/$RelationshipID"
+
+		if (-not $Force) {
+			$confirmation = Read-Host "Proceed with deletion? (yes/no)"
+			if (-not ($confirmation -eq 'yes')) {
+				Write-Error "Canceling the source replication delete  request..."; return
+			}
+		}
+
+
+		Write-Debug ($url | ConvertTo-Json -Depth 10)
+
+
+
+		# API call run
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'DELETE' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
+
+			if ($json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $response
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
+}
 
 # function Delete-QQObjectRelationship {
 # <#

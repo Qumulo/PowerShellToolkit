@@ -35,8 +35,10 @@ function List-QQSMBShares {
         List all SMB shares
     .DESCRIPTION
         List all SMB shares.
+	.PARAMETER PopulateTrusteeNames  
+		Populate trustee names in the response.
     .EXAMPLE
-        List-QQSMBShares [-Json]
+        List-QQSMBShares -PopulateTrusteeNames [-Json]
 	.LINK
 		https://care.qumulo.com/hc/en-us/articles/360000722428-Create-an-SMB-Share
 		https://care.qumulo.com/hc/en-us/articles/115013237727-QQ-CLI-SMB-Shares
@@ -48,6 +50,7 @@ function List-QQSMBShares {
 	# CmdletBinding parameters.
 	[CmdletBinding()]
 	param(
+		[Parameter(Mandatory = $False)] [switch]$PopulateTrusteeNames,
 		[Parameter(Mandatory = $False)] [switch]$Json
 	)
 	if ($SkipCertificateCheck -eq 'true') {
@@ -76,7 +79,14 @@ function List-QQSMBShares {
 		}
 
 		# API url definition
-		$url = "/v2/smb/shares/"
+		$url = "/v3/smb/shares/"
+
+		if ($PopulateTrusteeNames) {
+			$url += "?populate-trustee-names=true"
+		}
+		else {
+			$url += "?populate-trustee-names=false"
+		}
 
 		# API call run
 		try {
@@ -84,10 +94,10 @@ function List-QQSMBShares {
 
 			# Response
 			if ($Json) {
-				return @($response) | ConvertTo-Json -Depth 10
+				return @($response.entries) | ConvertTo-Json -Depth 10
 			}
 			else {
-				return $response
+				return $response.entries
 			}
 		}
 		catch {
@@ -105,12 +115,14 @@ function List-QQSMBShare {
         List a SMB share
     .DESCRIPTION
         Retrieve the specified SMB share. 
-	.PARAMETER Id [ID]
+	.PARAMETER ShareId [ID]
 		A unique identifier of the SMB share (share ID)
-	.PARAMETER Name [Name]
+	.PARAMETER ShareName [SHARE_NAME]
 		A unique identifier of the SMB share name
+	.PARAMETER TenantId [TENANT_ID]
+		ID of the tenant to get the share from. Only used if using the -ShareName argument.
     .EXAMPLE
-        List-QQSMBShares -Id [ID] | -Name [NAME] [-Json]
+        List-QQSMBShares -Id [ID] | -ShareName [NAME] -TenantId [TENANT_ID] [-Json]
 	.LINK
 		https://care.qumulo.com/hc/en-us/articles/360000722428-Create-an-SMB-Share
 		https://care.qumulo.com/hc/en-us/articles/115013237727-QQ-CLI-SMB-Shares
@@ -121,15 +133,18 @@ function List-QQSMBShare {
 	# CmdletBinding parameters.
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $True,ParameterSetName = "Id")] [string]$Id,
-		[Parameter(Mandatory = $True,ParameterSetName = "Name")] [string]$Name,
+		[Parameter(Mandatory = $True,ParameterSetName = "Id")] [string]$ShareId,
+		[Parameter(Mandatory = $True,ParameterSetName = "Name")] [string]$ShareName,
+		[Parameter(Mandatory = $True,ParameterSetName = "Name")] [int16]$TenantID,
 		[Parameter(Mandatory = $False)] [switch]$Json
 	)
 	if ($SkipCertificateCheck -eq 'true') {
 		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
 	}
 
+
 	try {
+		$foundExport = 0
 		# Existing BearerToken check
 		if (!$global:Credentials) {
 			Login-QQCluster
@@ -150,12 +165,37 @@ function List-QQSMBShare {
 			Authorization = "Bearer $bearerToken"
 		}
 
+
+		$url = "/v3/smb/shares/"
+
 		# API url definition
-		if ($Id) {
-			$url = "/v2/smb/shares/$Id"
+		if ($ShareId) {
+			$url += "$ShareId"
 		}
-		elseif ($Name) {
-			$url = "/v2/smb/shares/$Name"
+		elseif ($ShareName) {
+			# API call run
+			try {
+				$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+
+				# Response
+				$smbShares = $response.entries
+
+				foreach ($share in $smbShares) {
+					if (($ShareName -eq $share.share_name) -and ($TenantID -eq $share.tenant_id)) {
+						$ShareId = $share.id
+						$url += $ShareId
+						$foundExport = 1
+					}
+				}
+
+				if ($foundExport -eq 0) {
+					Write-Error "No matching share found. Check the share name and tenant id."
+					return
+				}
+			}
+			catch {
+				$_.Exception.Response
+			}
 		}
 
 		# API call run
@@ -184,10 +224,12 @@ function Add-QQSMBShare {
         Add a new SMB share
     .DESCRIPTION 
 		Add an SMB share with given options.
-	.PARAMETER Name [NAME] 
+	.PARAMETER ShareName [SHARE_NAME] 
 		The SMB share name
 	.PARAMETER FsPath [FS_PATH]
 		The filesystem path to SMB share
+	.PARAMETER TenantId [TENANT_ID]
+		ID of the tenant to get the share from. Only used if using the -ShareName argument.
     .PARAMETER Description [DESCRIPTION]
 		Description of this SMB share
     .PARAMETER AccessBasedEnumerationEnabled [$true|$false]
@@ -198,7 +240,7 @@ function Add-QQSMBShare {
 		Default POSIX file create mode bits on this SMB share (octal, default 0644 if this field is empty)
     .PARAMETER DefaultDirectoryCreateMode DEFAULT_DIRECTORY_CREATE_MODE]
 		Default POSIX directory create mode bits on this SMB share (octal, default 0755 if this field is empty)
-    .PARAMETER RequireEncryption {true,false}] [--json]
+    .PARAMETER RequireEncryption {true,false}]
 		Require all traffic to this share to be encrypted. Clients without encryption capabilities will not be able to connect. Default is false if this field is empty.
     .PARAMETER NoAccess
 		Grant no access.
@@ -223,7 +265,7 @@ function Add-QQSMBShare {
 	.PARAMETER DenyAllHosts
 		Deny all access to this share.
     .EXAMPLE
-        Add-QQSMBShares -Name NAME -FsPath FS_PATH
+        Add-QQSMBShares -ShareName [NAME] -TenantId [TENANT_ID]-FsPath [FS_PATH]
 			[-Description DESCRIPTION]
 			[-AccessBasedEnumerationEnabled {true,false}]
 			[-CreateFSPath {true,false}]
@@ -250,18 +292,19 @@ function Add-QQSMBShare {
 	# CmdletBinding parameters.
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $True)] [string]$Name,
+		[Parameter(Mandatory = $True,ParameterSetName = "Name")] [string]$ShareName,
+		[Parameter(Mandatory = $True,ParameterSetName = "Name")] [int]$TenantID = 1,
 		[Parameter(Mandatory = $True)] [string]$fsPath,
 		[Parameter(Mandatory = $False)] [bool]$CreateFSPath = $False,
 		[Parameter(Mandatory = $False)] [string]$Description,
 		[Parameter(Mandatory = $False)] [string]$DefaultFileCreateMode = "0644",
 		[Parameter(Mandatory = $False)] [string]$DefaultDirCreateMode = "0755",
 		[Parameter(Mandatory = $False)] [bool]$AccessBasedEnumaration = $False,
-		[Parameter(Mandatory = $False)] [bool]$Encryption = $False,
+		[Parameter(Mandatory = $False)] [bool]$RequireEncryption = $False,
 		[Parameter(Mandatory = $False)] [switch]$NoAccess,
 		[Parameter(Mandatory = $False)] [switch]$DenyAllHosts,
-		[Parameter(Mandatory = $False)] [array]$ReadOnly,
-		[Parameter(Mandatory = $False)] [array]$AllAccess,
+		[Parameter(Mandatory = $False)] [switch]$ReadOnly,
+		[Parameter(Mandatory = $False)] [switch]$AllAccess,
 		[Parameter(Mandatory = $False)] [array]$GrantReadAccess,
 		[Parameter(Mandatory = $False)] [array]$GrantReadWriteAccess,
 		[Parameter(Mandatory = $False)] [array]$GrantAllAccess,
@@ -298,10 +341,10 @@ function Add-QQSMBShare {
 
 		# API url definition
 		if ($CreateFSPath) {
-			$url = "/v2/smb/shares/?allow-fs-path-create=true"
+			$url = "/v3/smb/shares/?allow-fs-path-create=true"
 		}
 		else {
-			$url = "/v2/smb/shares/?allow-fs-path-create=false"
+			$url = "/v3/smb/shares/?allow-fs-path-create=false"
 		}
 
 		# Trustee (User & Group) Share Permissions
@@ -311,46 +354,29 @@ function Add-QQSMBShare {
 		else {
 			$permissions = @()
 			if ($readOnly) {
-				foreach ($trustee in $ReadOnly) {
-					if ($trustee.Contains(':'))
-					{
-						$trusteeArray = $trustee.Split(":")
-						$trusteeHash = @{ $trusteeArray[0] = $trusteeArray[1] }
+				$trusteeHash = @{ Name = "Everyone" }
+				$permissions += (
+					@{
+						type = "ALLOWED"
+						trustee = $trusteeHash
+						rights = @(
+							"READ"
+						)
 					}
-					else {
-						$trusteeHash = @{ Name = $trustee }
-					}
-					$permissions += (
-						@{
-							type = "ALLOWED"
-							trustee = $trusteeHash
-							rights = @(
-								"READ"
-							)
-						}
-					)
-				}
+				)
 			}
+
 			if ($allAccess) {
-				foreach ($trustee in $allAccess) {
-					if ($trustee.Contains(':'))
-					{
-						$trusteeArray = $trustee.Split(":")
-						$trusteeHash = @{ $trusteeArray[0] = $trusteeArray[1] }
+				$trusteeHash = @{ Name = "Everyone" }
+				$permissions += (
+					@{
+						type = "ALLOWED"
+						trustee = $trusteeHash
+						rights = @(
+							"ALL"
+						)
 					}
-					else {
-						$trusteeHash = @{ Name = $trustee }
-					}
-					$permissions += (
-						@{
-							type = "ALLOWED"
-							trustee = $trusteeHash
-							rights = @(
-								"ALL"
-							)
-						}
-					)
-				}
+				)
 			}
 			if ($GrantReadAccess) {
 				foreach ($trustee in $GrantReadAccess) {
@@ -513,7 +539,8 @@ function Add-QQSMBShare {
 
 		# API Request body
 		$body = @{
-			"share_name" = $Name
+			"share_name" = $ShareName
+			"tenant_id" = $TenantID
 			"fs_path" = $FsPath
 			"description" = $Description
 			"permissions" = $Permissions
@@ -521,7 +548,7 @@ function Add-QQSMBShare {
 			"access_based_enumeration_enabled" = $AccessBasedEnumaration
 			"default_file_create_mode" = $DefaultFileCreateMode
 			"default_directory_create_mode" = $DefaultDirCreateMode
-			"require_encryption" = $Encryption
+			"require_encryption" = $RequireEncryption
 		}
 
 		Write-Debug ($body | ConvertTo-Json -Depth 10)
@@ -552,12 +579,14 @@ function Delete-QQSMBShare {
         Delete a SMB share
     .DESCRIPTION
         Delete an SMB share. Not undoable.
-	.PARAMETER Id [ID]
+	.PARAMETER ShareId [ID]
 		A unique identifier of the SMB share ID
-	.PARAMETER Name [NAME]
+	.PARAMETER ShareName [SHARE_NAME]
 		A unique identifier of the SMB share name
+	.PARAMETER TenantId [TENANT_ID]
+		ID of the tenant to get the share from. Only used if using the -ShareName argument.
     .EXAMPLE
-        Delete-QQSMBShares -Id [ID] | -Name [NAME] 
+        Delete-QQSMBShares -Id [ID] | -ShareName [NAME] -TenantId [TENANT_ID] 
 	.LINK
 		https://care.qumulo.com/hc/en-us/articles/360000722428-Create-an-SMB-Share
 		https://care.qumulo.com/hc/en-us/articles/115013237727-QQ-CLI-SMB-Shares
@@ -568,14 +597,17 @@ function Delete-QQSMBShare {
 	# CmdletBinding parameters.
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $True,ParameterSetName = "Id")] [string]$Id,
-		[Parameter(Mandatory = $True,ParameterSetName = "Name")] [string]$Name
+		[Parameter(Mandatory = $True,ParameterSetName = "Id")] [string]$ShareId,
+		[Parameter(Mandatory = $True,ParameterSetName = "Name")] [string]$ShareName,
+		[Parameter(Mandatory = $True,ParameterSetName = "Name")] [int16]$TenantID
 	)
 	if ($SkipCertificateCheck -eq 'true') {
 		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
 	}
 
 	try {
+		$foundExport = 0
+
 		# Existing BearerToken check	
 		if (!$global:Credentials) {
 			Login-QQCluster
@@ -597,11 +629,36 @@ function Delete-QQSMBShare {
 		}
 
 		# API url definition
-		if ($Id) {
-			$url = "/v2/smb/shares/$Id"
+		$url = "/v3/smb/shares/"
+
+
+		if ($ShareId) {
+			$url += $ShareId
 		}
-		elseif ($Name) {
-			$url = "/v2/smb/shares/$Name"
+		elseif ($ShareName) {
+			# API call run
+			try {
+				$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+
+				# Response
+				$smbShares = $response.entries
+
+				foreach ($share in $smbShares) {
+					if (($ShareName -eq $share.share_name) -and ($TenantID -eq $share.tenant_id)) {
+						$ShareId = $share.id
+						$url += $ShareId
+						$foundExport = 1
+					}
+				}
+
+				if ($foundExport -eq 0) {
+					Write-Error "No matching share found. Check the share name and tenant id."
+					return
+				}
+			}
+			catch {
+				$_.Exception.Response
+			}
 		}
 
 		#API call run
@@ -609,8 +666,7 @@ function Delete-QQSMBShare {
 			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'DELETE' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
 
 			# Response
-			#  Response
-			return ("SMB share ($id) was deleted successfully.")
+			return ("SMB share ($ShareId) was deleted successfully.")
 		}
 		catch {
 			$_.Exception.Response
@@ -629,10 +685,12 @@ function Add-QQSMBSharePermission {
 		Add new SMB share permissions
 	.DESCRIPTION
 		Add new SMB share permission
-	.PARAMETER Id [ID]
+	.PARAMETER ShareId [ID]
 		The SMB share ID
-	.PARAMETER Name [NAME] 
+	.PARAMETER ShareName [SHARE_NAME] 
 		The SMB share name
+	.PARAMETER TenantId [TENANT_ID]
+		ID of the tenant to get the share from. Only used if using the -ShareName argument.
     .PARAMETER Type [Allowed|Denied]
 		SMB Share permission type
 	.PARAMETER Rights [None|Read,Write,Change_permissions|All]
@@ -640,7 +698,7 @@ function Add-QQSMBSharePermission {
     .PARAMETER Trustee [TRUSTEE]
 		Trustees. e.g. Everyone, uid:1000, gid:1001, sid:S-1-5-2-3-4, or auth_id:500
 	.EXAMPLE
-		Add-QQSMBSharePermissions -Name [NAME] | -Id [ID]
+		Add-QQSMBSharePermissions -ShareName [NAME] -TenantId [TENANT_ID] | -Id [ID]
 			-Type [Allowed|Denied]
 			-Rights [None|Read,Write,Change_permissions|All]
 			-Trustee [TRUSTEE]
@@ -649,8 +707,9 @@ function Add-QQSMBSharePermission {
 	# CmdletBinding parameters.
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $True,ParameterSetName = "Id")] [string]$Id,
-		[Parameter(Mandatory = $True,ParameterSetName = "Name")] [string]$Name,
+		[Parameter(Mandatory = $True,ParameterSetName = "Id")] [string]$ShareId,
+		[Parameter(Mandatory = $True,ParameterSetName = "Name")] [string]$ShareName,
+		[Parameter(Mandatory = $True,ParameterSetName = "Name")] [int16]$TenantID,
 		[Parameter(Mandatory = $True)] [string]$Trustee,
 		[Parameter(Mandatory = $True)][ValidateSet("Allowed","Denied")] [string]$Type,
 		[Parameter(Mandatory = $True)][ValidateSet("None","Read","Write","Change_permissions","All")] [array]$Rights,
@@ -682,18 +741,36 @@ function Add-QQSMBSharePermission {
 		}
 
 		# Share Name -> ID conversion
-		if (!$Id) {
-			$url = "/v2/smb/shares/$Name"
-			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
-			$Id = $response.id
+		$url = "/v3/smb/shares/"
+		if (!$ShareId) {
+			try {
+				$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
 
-			Write-Debug ($response | ConvertTo-Json -Depth 10)
+				# Response
+				$smbShares = $response.entries
+
+				foreach ($share in $smbShares) {
+					if (($ShareName -eq $share.share_name) -and ($TenantID -eq $share.tenant_id)) {
+						$ShareId = $share.id
+						$url += $ShareId
+						$foundExport = 1
+					}
+				}
+
+				if ($foundExport -eq 0) {
+					Write-Error "No matching share found. Check the share name and tenant id."
+					return
+				}
+			}
+			catch {
+				$_.Exception.Response
+			}
 		}
 
 
 		try {
 			# API url definition
-			$url = "/v2/smb/shares/" + $Id + "?allow-fs-path-create=false"
+			$url += "?allow-fs-path-create=false"
 
 			# API Request body
 			$permissions = $response.permissions
@@ -761,6 +838,8 @@ function Remove-QQSMBSharePermission {
 		The SMB share ID
 	.PARAMETER Name [NAME] 
 		The SMB share name
+	.PARAMETER TenantId [TENANT_ID]
+		ID of the tenant to get the share from. Only used if using the -ShareName argument.
     .PARAMETER Type [Allowed|Denied]
 		SMB Share permission type
 	.PARAMETER Rights [None|Read,Write,Change_permissions|All]
@@ -768,7 +847,7 @@ function Remove-QQSMBSharePermission {
     .PARAMETER Trustee [TRUSTEE]
 		Trustees. e.g. Everyone, uid:1000, gid:1001, sid:S-1-5-2-3-4, or auth_id:500
 	.EXAMPLE
-		Remove-QQSMBSharePermissions -Name [NAME] | -Id [ID]
+		Remove-QQSMBSharePermissions -ShareName [NAME] -TenantId [TENANT_ID] | -Id [ID]
 			-Type [Allowed|Denied]
 			-Rights [None|Read,Write,Change_permissions|All]
 			-Trustee [TRUSTEE]
@@ -783,8 +862,9 @@ function Remove-QQSMBSharePermission {
 	# CmdletBinding parameters.
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $True,ParameterSetName = "Id")] [string]$Id,
-		[Parameter(Mandatory = $True,ParameterSetName = "Name")] [string]$Name,
+		[Parameter(Mandatory = $True,ParameterSetName = "Id")] [string]$ShareId,
+		[Parameter(Mandatory = $True,ParameterSetName = "Name")] [string]$ShareName,
+		[Parameter(Mandatory = $True,ParameterSetName = "Name")] [int16]$TenantID,
 		[Parameter(Mandatory = $True)] [string]$Trustee,
 		[Parameter(Mandatory = $True)][ValidateSet("Allowed","Denied")] [string]$Type,
 		[Parameter(Mandatory = $True)][ValidateSet("None","Read","Write","Change_permissions","All")] [array]$Rights,
@@ -815,18 +895,36 @@ function Remove-QQSMBSharePermission {
 			Authorization = "Bearer $bearerToken"
 		}
 
+		$url = "/v3/smb/shares/"
 		# Share Name -> ID conversion
 		if (!$Id) {
-			$url = "/v2/smb/shares/$Name"
-			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
-			$Id = $response.id
+			try {
+				$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
 
-			Write-Debug ($response | ConvertTo-Json -Depth 10)
+				# Response
+				$smbShares = $response.entries
+
+				foreach ($share in $smbShares) {
+					if (($ShareName -eq $share.share_name) -and ($TenantID -eq $share.tenant_id)) {
+						$ShareId = $share.id
+						$url += $ShareId
+						$foundExport = 1
+					}
+				}
+
+				if ($foundExport -eq 0) {
+					Write-Error "No matching share found. Check the share name and tenant id."
+					return
+				}
+			}
+			catch {
+				$_.Exception.Response
+			}
 		}
 
 		try {
 			# API url definition
-			$url = "/v2/smb/shares/" + $Id + "?allow-fs-path-create=false"
+			$url += "?allow-fs-path-create=false"
 
 			# API Request body	
 			$newPermissions = @()
