@@ -354,7 +354,7 @@ function Add-QQSMBShare {
 		else {
 			$permissions = @()
 			if ($readOnly) {
-				$trusteeHash = @{ Name = "Everyone" }
+				$trusteeHash = @{ name = "Everyone" }
 				$permissions += (
 					@{
 						type = "ALLOWED"
@@ -367,7 +367,7 @@ function Add-QQSMBShare {
 			}
 
 			if ($allAccess) {
-				$trusteeHash = @{ Name = "Everyone" }
+				$trusteeHash = @{ name = "Everyone" }
 				$permissions += (
 					@{
 						type = "ALLOWED"
@@ -386,7 +386,7 @@ function Add-QQSMBShare {
 						$trusteeHash = @{ $trusteeArray[0] = $trusteeArray[1] }
 					}
 					else {
-						$trusteeHash = @{ Name = $trustee }
+						$trusteeHash = @{ name = $trustee }
 					}
 					$permissions += (
 						@{
@@ -407,7 +407,7 @@ function Add-QQSMBShare {
 						$trusteeHash = @{ $trusteeArray[0] = $trusteeArray[1] }
 					}
 					else {
-						$trusteeHash = @{ Name = $trustee }
+						$trusteeHash = @{ name = $trustee }
 					}
 					$permissions += (
 						@{
@@ -429,7 +429,7 @@ function Add-QQSMBShare {
 						$trusteeHash = @{ $trusteeArray[0] = $trusteeArray[1] }
 					}
 					else {
-						$trusteeHash = @{ Name = $trustee }
+						$trusteeHash = @{ name = $trustee }
 					}
 					$permissions += (
 						@{
@@ -450,7 +450,7 @@ function Add-QQSMBShare {
 						$trusteeHash = @{ $trusteeArray[0] = $trusteeArray[1] }
 					}
 					else {
-						$trusteeHash = @{ Name = $trustee }
+						$trusteeHash = @{ name = $trustee }
 					}
 					$permissions += (
 						@{
@@ -782,14 +782,14 @@ function Add-QQSMBSharePermission {
 				$trusteeHash = @{ $trusteeArray[0] = $trusteeArray[1] }
 			}
 			else {
-				$trusteeHash = @{ Name = $trustee }
+				$trusteeHash = @{ name = $trustee }
 			}
 
 			$newRights = @()
 			foreach ($right in $Rights) {
 				$newRights += $right.ToUpper()
 			}
-			$permissions += (
+			$permissions += @(
 				@{
 					type = $Type.ToUpper()
 					trustee = $trusteeHash

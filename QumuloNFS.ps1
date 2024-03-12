@@ -104,7 +104,7 @@ function Get-QQNFSExport {
 	.PARAMETER ExportPath [EXPORT_PATH]
 		A unique identifier of the NFS export path
     .EXAMPLE
-        Get-QQNFSExport -ExportId [ID] | -ExportPath [EXPORT_PATH] -TenantID [TENANT_ID] [-Json]
+        Get-QQNFSExport -ExportId [ID] | -ExportPath [ExportPath] [-Json]
 	.LINK
 
     #>
@@ -219,7 +219,7 @@ function Add-QQNFSExport {
 			[-Description DESCRIPTION]
 			[-CreateFSPath {true,false}]
 			[-Readonly {true,false}]
-			[-TenantID TENANT_ID]
+			[-TEnantID TENANT_ID]
 			[-Json]
 		.LINK
 
@@ -326,7 +326,7 @@ function Delete-QQNFSExport {
 	.PARAMETER ExportPath [ExportPath]
 		A unique identifier of the NFS export path
     .EXAMPLE
-        Delete-QQNFSExport -Id [ID] | -ExportPath [EXPORT_PATH] -TenantID [TENANT_ID]
+        Delete-QQNFSExport -Id [ID] | -ExportPath [EXPORT_PATH] 
 	.LINK
 
     #>
@@ -436,7 +436,7 @@ function Modify-QQNFSExport {
 		Specifies whether the file system path can be created if it does not already exist.
 	.EXAMPLE
 		Modify-QQNFSExport [-Json]
-			-ExportPath [EXPORT_PATH] -TenantID [TENANT_ID] | -ExportId [EXPORT_ID] 
+			-ExportPath EXPORT_PATH -TenantID TENANT_ID | -ExportId EXPORT_ID 
 			[-Description DESCRIPTION]
 			[-CreateFSPath {true,false}]
 			[-NewFSPath NEW_FS_PATH]
@@ -594,7 +594,7 @@ function Add-QQNFSExportHostAccess {
 			The name of a local user to squash to.
 		.EXAMPLE
 			Add-QQNFSExportHostAccess 
-				-ExportPath [EXPORT_PATH] -TenantID [TENANT_ID] | -ExportId [EXPORT_ID]
+				-ExportPath EXPORT_PATH -TenantID TENANT_ID | -ExportId EXPORT_ID
 				-HostRestriction [HOSTS]
 				-ReadOnly $true
 				-RootSquash
@@ -798,7 +798,7 @@ function List-QQNFSExportHostAccess {
 			ID of the tenant the export is in. Only used if using the -ExportPath argument.
 		.EXAMPLE
 			Add-QQNFSExportHostAccess 
-				-ExportPath [EXPORT_PATH] -TenantID [TENANT_ID] | -ExportId [EXPORT_ID]
+				-ExportPath EXPORT_PATH -TenantID TENANT_ID | -ExportId EXPORT_ID
 			.LINK
 	
 		#>
@@ -917,7 +917,7 @@ function Modify-QQNFSExportHostAccess {
 			The name of a local user to squash to.
 		.EXAMPLE
 			Modify-QQNFSExportHostAccess 
-				-ExportPath [EXPORT_PATH] -TenantID [TENANT_ID] | -ExportId [EXPORT_ID]
+				-ExportPath EXPORT_PATH -TenantID TENANT_ID | -ExportId EXPORT_ID
 				-Position [POSITION]
 				-HostRestriction [HOSTS]
 				-ReadOnly $true
@@ -1189,7 +1189,7 @@ function Remove-QQNFSExportHostAccess {
 			The position value of the host restriction that you can get List-QQNFSExportHostAccess
 		.EXAMPLE
 			Remove-QQNFSExportHostAccess 
-				-ExportPath [EXPORT_PATH] -TenantID [TENANT_ID] | -ExportId [EXPORT_ID]
+				-ExportPath EXPORT_PATH -TenantID TENANT_ID | -ExportId EXPORT_ID
 				-Position [POSITION]
 			.LINK
 	
