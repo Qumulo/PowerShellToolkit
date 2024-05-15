@@ -14,7 +14,7 @@
 
 ## Introduction
 
-Qumulo Powershell Toolkit will help the Qumulo customers who uses Microsoft PowerShell for their daily operations. 
+Qumulo Powershell Toolkit will help the Qumulo customers who uses Microsoft PowerShell for their daily operations.  
 
 The toolkit has a bunch of Qumulo operations that will require mainly for Windows based clients and this will expand for whole CLI tool command set in the future.
 

@@ -769,10 +769,9 @@ function Add-QQSMBSharePermission {
 
 
 		try {
-			# API url definition
-			$url += "?allow-fs-path-create=false"
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
 
-			# API Request body
+   			# API Request body
 			$permissions = $response.permissions
 
 			# Trustee identification
