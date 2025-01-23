@@ -57,7 +57,7 @@ function List-QQNetworks {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -129,7 +129,7 @@ function Get-QQNetwork {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -225,7 +225,7 @@ function Add-QQNetwork {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -313,7 +313,7 @@ function Delete-QQNetwork {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -411,7 +411,7 @@ function Modify-QQNetwork {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -495,7 +495,7 @@ function List-QQConnections {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -557,7 +557,7 @@ function List-QQInterfaces {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -622,7 +622,7 @@ function Get-QQInterface {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -699,7 +699,7 @@ function Modify-QQInterface {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -780,7 +780,7 @@ function List-QQNetworkPoll {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -849,7 +849,7 @@ function Get-QQPersistentIps {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -913,7 +913,7 @@ function Get-QQFloatingIps {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}

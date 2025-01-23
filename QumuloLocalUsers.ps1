@@ -53,7 +53,7 @@ function List-QQLocalUsers {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -118,7 +118,7 @@ function Get-QQLocalUser {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -201,7 +201,7 @@ function Get-QQLocalUserGroups {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -297,7 +297,7 @@ function Add-QQLocalUser {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -409,7 +409,7 @@ function Delete-QQLocalUser {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -498,7 +498,7 @@ function Set-QQUserPassword {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}

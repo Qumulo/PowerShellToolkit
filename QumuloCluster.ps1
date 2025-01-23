@@ -52,7 +52,7 @@ function Get-QQClusterSettings {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -115,7 +115,7 @@ function List-QQNodes {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -182,7 +182,7 @@ function Get-QQNode {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -247,7 +247,7 @@ function List-QQUnconfiguredNodes {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -310,7 +310,7 @@ function Get-QQEncryptionStatus {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -374,7 +374,7 @@ function Get-QQNodeState {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -440,7 +440,7 @@ function List-QQClusterSlots {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -510,7 +510,7 @@ function Get-QQChassisStatus {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -580,7 +580,7 @@ function Get-QQUIDLightStatus {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -649,7 +649,7 @@ function Get-QQProtectionStatus {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -711,7 +711,7 @@ function Get-QQRestriperStatus {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -773,7 +773,7 @@ function Get-QQVersion {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -835,7 +835,7 @@ function Get-QQSSLCaCertificate {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -897,7 +897,7 @@ function Get-QQWebUISettings {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -964,7 +964,7 @@ function Modify-QQWebUISettings {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}

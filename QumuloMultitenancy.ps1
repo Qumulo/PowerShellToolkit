@@ -57,7 +57,7 @@ function List-QQTenants {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -124,7 +124,7 @@ function Get-QQTenant {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -221,7 +221,7 @@ function Set-QQMultitenancy {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -368,7 +368,7 @@ function Create-QQTenant {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -508,7 +508,7 @@ function Delete-QQTenant {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}

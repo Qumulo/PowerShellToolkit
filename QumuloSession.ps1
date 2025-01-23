@@ -30,75 +30,83 @@
 	===========================================================================
 #>
 function Login-QQCluster {
-<#
-    .SYNOPSIS
-        Log in to Qumulo to get REST credentials
-    .DESCRIPTION
-        Authenticate the user. The response value contains a message authentication code, which is required to sign subsequent requests.
+	<#
+	.SYNOPSIS
+		Log in to Qumulo to get REST credentials
+	.DESCRIPTION
+		Authenticate the user using either an access token or a username & password.
 	.PARAMETER clusterName
 		DNS name or one of the IP addresses of the Qumulo cluster
 	.PARAMETER portNumber
-		Port number REST connection. Default is 8000
+		Port number for REST connection. Default is 8000
 	.PARAMETER userName
 		User name for login. 
 	.PARAMETER password
 		Password of the user. 
-    .EXAMPLE
-        Login-QQCluster -clusterName qumulocluster.local -portNumber 8000 -userName USERNAME -Password PASSWORD
+	.PARAMETER AccessToken
+		Pre-existing bearer token for authentication.
+	.EXAMPLE
+		Login-QQCluster -clusterName qumulocluster.local -portNumber 8000 -userName USERNAME -Password PASSWORD
+		Login-QQCluster -clusterName qumulocluster.local -portNumber 8000 -AccessToken "your_access_token"
 	.LINK
 		https://care.qumulo.com/hc/en-us/articles/360004600994-Authentication-with-Qumulo-s-REST-API#use-the-bearer-token-0-4
-    #>
+#>
 
-	# CmdletBinding parameters. If Password is not given in command prompt, it will request as a input and it won't be shown as a clear text. 	
 	[CmdletBinding(DefaultParameterSetName = 'Secret')]
 	param(
 		[Parameter(Mandatory = $True)][ValidateNotNullOrEmpty()][Alias("c")] [string]$clusterName,
 		[Parameter(Mandatory = $False)][ValidateNotNullOrEmpty()][Alias("p")] [int]$portNumber = 8000,
-		[Parameter(Mandatory = $True)][ValidateNotNullOrEmpty()][Alias("u")] [string]$userName,
-		[Parameter(Mandatory = $True,ParameterSetName = 'Secret')] [Security.SecureString]${ClusterPassword},
-		[Parameter(Mandatory = $True,ParameterSetName = 'Plain')][Alias("pass")] [string]$Password)
+		[Parameter(Mandatory = $False, ParameterSetName = 'Token')][Alias("token")] [string]$AccessToken,
+		[Parameter(Mandatory = $True, ParameterSetName = 'Secret')][Alias("u")] [string]$userName,
+		[Parameter(Mandatory = $True, ParameterSetName = 'Secret')] [Security.SecureString]${ClusterPassword},
+		[Parameter(Mandatory = $True, ParameterSetName = 'Plain')][Alias("pass")] [string]$Password
+	)
 
 	if ($SkipCertificateCheck -eq 'true') {
 		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
 	}
 
-	# Password parameter checks and conversion for the required formats. 
+	if ($AccessToken) {
+		# Use the provided AccessToken directly
+		$global:Credentials = @{
+			ClusterName = $ClusterName
+			PortNumber = $PortNumber
+			BearerToken = $AccessToken
+		}
+		Write-Output "Authenticated using AccessToken."
+		return
+	}
+
+	# Password handling
 	if ($Password) {
 		$SecurePassword = $Password | ConvertTo-SecureString -AsPlainText -Force
-	}
-	else {
+	} else {
 		$SecurePassword = ${ClusterPassword}
 	}
 
-	if (!$BearerToken) {
-		# API Request Body
-		$Body = @{
-			'username' = $UserName
-			'password' = ConvertFrom-SecureString -SecureString $SecurePassword -AsPlainText
+	# Login via username & password if AccessToken is not provided
+	$Body = @{
+		'username' = $UserName
+		'password' = ConvertFrom-SecureString -SecureString $SecurePassword -AsPlainText
+	}
+
+	$Url = "/v1/session/login"
+
+	try {
+		$response = Invoke-RestMethod -SkipCertificateCheck -Method 'POST' -Uri "https://${ClusterName}:$PortNumber$Url" -Body ($Body | ConvertTo-Json -Depth 10) -ContentType "application/json" -TimeoutSec 60 -ErrorAction Stop
+
+		# Store credentials globally
+		$global:Credentials = @{
+			ClusterName = $ClusterName
+			PortNumber = $PortNumber
+			BearerToken = $response.bearer_token
 		}
 
-		# API url definition
-		$Url = "/v1/session/login"
-
-		# API call run	
-		try {
-			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'POST' -Uri "https://${ClusterName}:$PortNumber$Url" -Body ($Body | ConvertTo-Json -Depth 10) -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
-
-			# Outputs
-			$BearerToken = $response.bearer_token
-
-			# Credentials will be required for other function operations. 	
-			$global:Credentials = @{
-				ClusterName = $ClusterName
-				PortNumber = $PortNumber
-				BearerToken = $BearerToken
-			}
-
-			return
-		}
-		catch {
-			$_.Exception.Response
-		}
+		Write-Output "Authenticated using username and password."
+		return
+	}
+	catch {
+		Write-Error "Login failed: $($_.Exception.Response)"
 	}
 }
 function List-QQCurrentUser {
@@ -126,7 +134,7 @@ function List-QQCurrentUser {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -191,7 +199,7 @@ function List-QQCurrentRoles {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -256,7 +264,7 @@ function List-QQAllPrivileges {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}

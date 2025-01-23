@@ -54,7 +54,7 @@ function List-QQSourceRelationships {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -116,7 +116,7 @@ function List-QQSourceRelationshipStatuses {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -180,7 +180,7 @@ function Get-QQSourceRelationship {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -245,7 +245,7 @@ function Get-QQSourceRelationshipStatus {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -308,7 +308,7 @@ function List-QQSourceRelationshipSnapshots {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -371,7 +371,7 @@ function List-QQTargetRelationshipStatuses {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -435,7 +435,7 @@ function Get-QQTargetRelationshipStatus {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -517,7 +517,7 @@ function Create-QQSourceRelationship {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -598,7 +598,7 @@ function Authorize-QQRelationship {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -681,7 +681,7 @@ function Delete-QQSourceRelationship {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -758,7 +758,7 @@ function Delete-QQTargetRelationship {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -833,7 +833,7 @@ function Delete-QQTargetRelationship {
 # 			Login-QQCluster
 # 		}
 # 		else {
-# 			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+# 			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 # 				Login-QQCluster
 # 			}
 # 		}
@@ -892,7 +892,7 @@ function Delete-QQTargetRelationship {
 # 			Login-QQCluster
 # 		}
 # 		else {
-# 			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+# 			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 # 				Login-QQCluster
 # 			}
 # 		}
@@ -966,7 +966,7 @@ function Delete-QQTargetRelationship {
 # 			Login-QQCluster
 # 		}
 # 		else {
-# 			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+# 			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 # 				Login-QQCluster
 # 			}
 # 		}

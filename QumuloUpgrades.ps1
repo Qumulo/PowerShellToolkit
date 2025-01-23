@@ -57,7 +57,7 @@ function Get-QQUpgradeStatus {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -95,7 +95,7 @@ function Get-QQUpgradeStatus {
 }
 
 
-function Verify-QQUgradeImage {
+function Verify-QQUpgradeImage {
 <#
     .SYNOPSIS
         Verify an image path for upgrade
@@ -123,7 +123,7 @@ function Verify-QQUgradeImage {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -165,7 +165,7 @@ function Verify-QQUgradeImage {
 
 
 
-function Prepare-QQUgrade {
+function Prepare-QQUpgrade {
 <#
     .SYNOPSIS
         Prepare for upgrade.
@@ -201,7 +201,7 @@ function Prepare-QQUgrade {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
@@ -247,7 +247,7 @@ function Prepare-QQUgrade {
 	}
 }
 
-function Commit-QQUgrade {
+function Commit-QQUpgrade {
 <#
     .SYNOPSIS
         Commit a prepared upgrade.
@@ -272,7 +272,7 @@ function Commit-QQUgrade {
 			Login-QQCluster
 		}
 		else {
-			if (!$global:Credentials.BearerToken.StartsWith("session-v1")) {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
 				Login-QQCluster
 			}
 		}
