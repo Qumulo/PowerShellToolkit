@@ -46,7 +46,6 @@ To connect to a Qumulo cluster, use the `Login-QQCluster` cmdlet:
 # Login a Qumulo cluster with your username and password
 Login-QQCluster -ClusterName qumulo.best.filestorage.com -UserName admin -Password *********
 
-
 # Login a Qumulo cluster with an access token
 Login-QQCluster -ClusterName qumulo.best.filestorage.com -AccessToken access-v1:*********
 

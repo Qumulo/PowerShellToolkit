@@ -772,7 +772,6 @@ function List-QQSMBShares {
 				# API url definition
 				$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
 	
-				Write-Host "Test " $response
 				# API Request body
 				$permissions = $response.permissions
 
