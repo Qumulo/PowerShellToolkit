@@ -1,4 +1,4 @@
-﻿<#
+<#
 	===========================================================================
 	Created by:   	berat.ulualan@qumulo.com
 	Organization: 	Qumulo, Inc.
@@ -772,6 +772,7 @@ function List-QQSMBShares {
 				# API url definition
 				$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
 	
+
 				# API Request body
 				$permissions = $response.permissions
 
@@ -813,7 +814,8 @@ function List-QQSMBShares {
 						return @($response) | ConvertTo-Json -Depth 10
 					}
 					else {
-						return $response
+						#return $response
+						return
 					}
 				}
 				catch {
@@ -830,53 +832,23 @@ function List-QQSMBShares {
 	}
 	
 	function Remove-QQSMBSharePermission {
-	<#
+		<#
 		.SYNOPSIS
-			Remove matched SMB share permissions
-		.DESCRIPTION
-			Remove matched SMB share permissions
-		.PARAMETER Id [ID]
-			The SMB share ID
-		.PARAMETER Name [NAME] 
-			The SMB share name
-		.PARAMETER TenantId [TENANT_ID]
-			ID of the tenant to get the share from. Only used if using the -ShareName argument.
-		.PARAMETER Type [Allowed|Denied]
-			SMB Share permission type
-		.PARAMETER Rights [None|Read,Write,Change_permissions|All]
-			SMB Share permission rights. 
-		.PARAMETER Trustee [TRUSTEE]
-			Trustees. e.g. Everyone, uid:1000, gid:1001, sid:S-1-5-2-3-4, or auth_id:500
-		.EXAMPLE
-			Remove-QQSMBSharePermissions -ShareName [NAME] -TenantId [TENANT_ID] | -Id [ID]
-				-Type [Allowed|Denied]
-				-Rights [None|Read,Write,Change_permissions|All]
-				-Trustee [TRUSTEE]
-				[-Json]
-		.LINK
-			https://care.qumulo.com/hc/en-us/articles/360000722428-Create-an-SMB-Share
-			https://care.qumulo.com/hc/en-us/articles/115013237727-QQ-CLI-SMB-Shares
-			https://care.qumulo.com/hc/en-us/articles/360011328533-SMB-Share-Permissions
-			https://care.qumulo.com/hc/en-us/articles/360005375333-Hide-an-SMB-Share
-			https://care.qumulo.com/hc/en-us/articles/360041155254-SMB-Host-Restrictions
-			#>
-		# CmdletBinding parameters.
+			Remove matched SMB share permissions with precise matching
+		#>
 		[CmdletBinding()]
 		param(
-			[Parameter(Mandatory = $True,ParameterSetName = "Id")] [string]$ShareId,
-			[Parameter(Mandatory = $True,ParameterSetName = "Name")] [string]$ShareName,
-			[Parameter(Mandatory = $True,ParameterSetName = "Name")] [int16]$TenantID,
+			[Parameter(Mandatory = $True, ParameterSetName = "Id")] [string]$ShareId,
+			[Parameter(Mandatory = $True, ParameterSetName = "Name")] [string]$ShareName,
+			[Parameter(Mandatory = $True, ParameterSetName = "Name")] [int16]$TenantID,
 			[Parameter(Mandatory = $True)] [string]$Trustee,
 			[Parameter(Mandatory = $True)][ValidateSet("Allowed","Denied")] [string]$Type,
 			[Parameter(Mandatory = $True)][ValidateSet("None","Read","Write","Change_permissions","All")] [array]$Rights,
 			[Parameter(Mandatory = $False)] [switch]$Json
 		)
-		if ($SkipCertificateCheck -eq 'true') {
-			$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
-		}
 	
 		try {
-			# Existing BearerToken check
+			# Authenticate to the cluster
 			if (!$global:Credentials) {
 				Login-QQCluster
 			}
@@ -890,133 +862,138 @@ function List-QQSMBShares {
 			$clusterName = $global:Credentials.ClusterName
 			$portNumber = $global:Credentials.PortNumber
 	
-			Write-Debug ($global:Credentials | ConvertTo-Json -Depth 10)
-	
 			$TokenHeader = @{
 				Authorization = "Bearer $bearerToken"
 			}
 	
 			$url = "/v3/smb/shares/"
-			# Share Name -> ID conversion
-			if (!$Id) {
-				try {
-					$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
+			
+			# Share Name -> ID conversion if needed
+			if (!$ShareId) {
+				$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60
 	
-					# Response
-					$smbShares = $response.entries
+				$smbShares = $response.entries
+				$matchingShare = $smbShares | Where-Object { $_.share_name -eq $ShareName -and $_.tenant_id -eq $TenantID }
 	
-					foreach ($share in $smbShares) {
-						if (($ShareName -eq $share.share_name) -and ($TenantID -eq $share.tenant_id)) {
-							$ShareId = $share.id
-							$url += $ShareId
-							$foundExport = 1
-						}
-					}
-	
-					if ($foundExport -eq 0) {
-						Write-Error "No matching share found. Check the share name and tenant id."
-						return
-					}
+				if (!$matchingShare) {
+					Write-Error "No matching share found. Check the share name and tenant id."
+					return
 				}
-				catch {
-					$_.Exception.Response
+	
+				$ShareId = $matchingShare.id
+				$url += $ShareId
+			}
+			else {
+				$url += $ShareId
+			}
+	
+			$url += "?allow-fs-path-create=false"
+	
+			# Get current permissions
+			$getResponse = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60
+			$permissions = $getResponse.permissions
+	
+			# Enhanced debugging function
+			function Test-PermissionMatch {
+				param($Permission, $MatchTrustee, $MatchType, $MatchRights, [switch]$Verbose)
+	
+				# Trustee matching with detailed diagnostics
+				$trusteeMatch = $false
+				$trusteeInfo = ""
+				if ($MatchTrustee.Contains(':')) {
+					$key, $value = $MatchTrustee.Split(":", 2)
+					$trusteeMatch = $Permission.trustee.$key -eq $value
+					$trusteeInfo = "Matching $key with value $value. Current trustee: $($Permission.trustee.$key)"
+				} else {
+					$trusteeMatch = $Permission.trustee.Name -ieq $MatchTrustee
+					$trusteeInfo = "Matching name '$MatchTrustee'. Current trustee name: $($Permission.trustee.Name)"
+				}
+	
+				# Type matching with diagnostics
+				$typeMatch = $Permission.type -ieq $MatchType
+				$typeInfo = "Matching type '$MatchType'. Current type: $($Permission.type)"
+	
+				# Rights matching with precise comparison
+				$permRights = $Permission.rights | ForEach-Object { $_.ToUpper() }
+				$inputRights = $MatchRights | ForEach-Object { $_.ToUpper() }
+				
+				# Sort the rights for consistent comparison
+				$sortedPermRights = $permRights | Sort-Object
+				$sortedInputRights = $inputRights | Sort-Object
+				
+				$rightsMatch = (@($sortedPermRights) -join ',') -eq (@($sortedInputRights) -join ',')
+				$rightsInfo = "Matching rights: Expected $($inputRights -join ','), Current $($permRights -join ',')"
+	
+
+					Write-Debug "Trustee Check: $trusteeMatch - $trusteeInfo"
+					Write-Debug "Type Check: $typeMatch - $typeInfo"
+					Write-Debug "Rights Check: $rightsMatch - $rightsInfo"
+					Write-Debug "Sorted Perm Rights: $($sortedPermRights -join ',')"
+					Write-Debug "Sorted Input Rights: $($sortedInputRights -join ',')"
+
+	
+				# Return match result
+				return ($trusteeMatch -and $typeMatch -and $rightsMatch)
+			}
+	
+			# Prepare to track matching and non-matching permissions
+			$matchingPermissions = @()
+			$nonMatchingPermissions = @()
+	
+			# Detailed permission filtering
+			foreach ($perm in $permissions) {
+				$isMatch = Test-PermissionMatch $perm $Trustee $Type $Rights
+				if ($isMatch) {
+					$matchingPermissions += $perm
+				} else {
+					$nonMatchingPermissions += $perm
 				}
 			}
 	
-			try {
-				# API url definition
-				$url += "?allow-fs-path-create=false"
-	
-				# API Request body	
-				$newPermissions = @()
-				$permissions = $response.permissions
-	
-				foreach ($permission in $permissions) {
-					# Trustee identification
-					if ($Trustee.Contains(':'))
-					{
-						if ($permission.trustee.$(($trustee -split '\:')[0]) -eq $(($trustee -split '\:')[1])) {
-							$trusteeCheck = $true
-						}
-					}
-					else {
-						if ($permission.trustee.Name -eq $trustee) {
-							$trusteeCheck = $true
-						}
-						else {
-							$trusteeCheck = $false
-						}
-					}
-	
-					$updatedRights = @()
-					foreach ($right in $Rights) {
-						$updatedRights += $right.ToUpper()
-					}
-	
-					$compareRights = Compare-Object $permission.rights $updatedRights
-					if (!$compareRights) {
-						$rightsCheck = $true
-					}
-					else {
-						$rightsCheck = $false
-					}
-	
-					if ($permission.type -eq $Type.ToUpper()) {
-						$typeCheck = $true
-					}
-					else {
-						$typeCheck = $false
-					}
-	
-					Write-Verbose ($trusteeCheck | ConvertTo-Json -Depth 10)
-					if (($trusteeCheck -ne $true) -or ($rightsCheck -ne $true) -or ($typeCheck -ne $true))
-					{
-						$newPermissions += $permission
-					}
-				}
-	
-	
-				# API request body	
-				$body = @{
-					"permissions" = $newPermissions
-				}
-	
-				Write-Debug ($body | ConvertTo-Json -Depth 10)
-	
-				# API call run
-				try {
-					$response = Invoke-RestMethod -SkipCertificateCheck -Method 'PATCH' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
-	
-					# Response
-					$comparePermissions = Compare-Object $permissions $newPermissions
-					if ($comparePermissions)
-					{
-						if ($Json) {
-							return @($response) | ConvertTo-Json -Depth 10
-						}
-						else {
-							return $response
-						}
-					}
-					else {
-						Write-Host "No matched entry!"
-					}
-	
-				}
-				catch {
-					$_.Exception.Response
-				}
+			# Debugging output
+			Write-Debug "Matching Permissions Count: $($matchingPermissions.Count)"
+			Write-Debug "Non-Matching Permissions Count: $($nonMatchingPermissions.Count)"
+			
+			Write-Debug "`nMatching Permissions Details:"
+			$matchingPermissions | ForEach-Object {
+				Write-Debug ($_ | ConvertTo-Json -Depth 5)
 			}
-			catch {
-				$_.Exception.Response
+
+	
+			# If no matching permissions found
+			if ($matchingPermissions.Count -eq 0) {
+				Write-Error "No matching permission found to remove."
+				
+				# Detailed permission mismatch explanation
+				Write-Debug "`nDetailed Permission Check:"
+				foreach ($perm in $permissions) {
+					Test-PermissionMatch $perm $Trustee $Type $Rights -Verbose
+				}
+				return
+			}
+	
+			# Prepare API request body with non-matching permissions
+			$body = @{
+				"permissions" = $nonMatchingPermissions
+			}
+	
+			# Update permissions
+			$updateResponse = Invoke-RestMethod -SkipCertificateCheck -Method 'PATCH' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60
+	
+			# Return response
+			if ($Json) {
+				return $updateResponse | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $updateResponse
 			}
 		}
 		catch {
+			Write-Error "An error occurred: $_"
 			$_.Exception.Response
 		}
-	
 	}
-	
+
 	function Get-QQSMBSettings {
 	<#
 		.SYNOPSIS
