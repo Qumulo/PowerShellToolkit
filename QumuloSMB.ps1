@@ -766,6 +766,33 @@ function List-QQSMBShares {
 					$_.Exception.Response
 				}
 			}
+
+			# Local function to match permission
+			function Test-PermissionMatch {
+				param($Permission, $Trustee, $Type, $Rights)
+
+				# Normalize "All" rights to explicit set
+				if ($Rights.Count -eq 1 -and $Rights[0] -eq "All") {
+					$Rights = @("Write", "Read", "Change_permissions")
+				}
+
+				$trusteeMatch = $false
+				if ($Trustee.Contains(':')) {
+					$key, $value = $Trustee.Split(":", 2)
+					$trusteeMatch = $Permission.trustee.$key -eq $value
+				} else {
+					$trusteeMatch = $Permission.trustee.name -ieq $Trustee
+				}
+
+				$typeMatch = $Permission.type -ieq $Type
+				
+				$permRights = $Permission.rights | ForEach-Object { $_.ToUpper() } | Sort-Object
+				$inputRights = $Rights | ForEach-Object { $_.ToUpper() } | Sort-Object
+				$rightsMatch = ($permRights -join ',') -eq ($inputRights -join ',')
+
+				return ($trusteeMatch -and $typeMatch -and $rightsMatch)
+			}
+
 	
 	
 			try {
@@ -790,6 +817,20 @@ function List-QQSMBShares {
 				$newRights = @()
 				foreach ($right in $Rights) {
 					$newRights += $right.ToUpper()
+				}
+
+				# Avoid adding duplicates
+				$duplicate = $false
+				foreach ($perm in $permissions) {
+					if (Test-PermissionMatch -Permission $perm -Trustee $Trustee -Type $Type -Rights $Rights) {
+						$duplicate = $true
+						break
+					}
+				}
+
+				if ($duplicate) {
+					Write-Warning "The specified permission already exists and will not be added again."
+					return
 				}
 				$permissions += @(
 					@{

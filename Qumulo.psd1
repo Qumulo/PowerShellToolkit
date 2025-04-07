@@ -12,7 +12,7 @@
 	RootModule = 'Qumulo.psm1'
 
 	# Version number of this module.
-	ModuleVersion = '7.4.0'
+	ModuleVersion = '7.4.1'
 
 	# Supported PSEditions
 	# CompatiblePSEditions = @()
