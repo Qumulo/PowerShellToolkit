@@ -987,7 +987,11 @@ function List-QQNFSExports {
 			try {
 				$response = Invoke-RestMethod -SkipCertificateCheck -Method 'GET' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -TimeoutSec 60 -ErrorAction:Stop
 	
-				$nfsExports = $response.entries
+				if ($url -like '/v2/*') {
+                                       $nfsExports = $response
+                                } else {
+                                       $nfsExports = $response.entries
+                                }
 	
 				if ($ExportId) {
 					foreach ($export in $nfsExports) {

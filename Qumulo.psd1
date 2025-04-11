@@ -12,7 +12,7 @@
 	RootModule = 'Qumulo.psm1'
 
 	# Version number of this module.
-	ModuleVersion = '7.4.1'
+	ModuleVersion = '7.4.2'
 
 	# Supported PSEditions
 	# CompatiblePSEditions = @()
@@ -27,7 +27,7 @@
 	CompanyName = 'Qumulo, Inc.'
 
 	# Copyright statement for this module
-	Copyright = '(c) 2023 Qumulo, Inc. All rights reserved.'
+	Copyright = '(c) 2025 Qumulo, Inc. All rights reserved.'
 
 	# Description of the functionality provided by this module
 	Description = 'Qumulo Powershell Toolkit will help the Qumulo customers who uses Microsoft PowerShell for their daily operations.'
