@@ -40,7 +40,7 @@ function Get-QQFileAttr {
     .PARAMETER Path [Directory  or File Path]
         Directory or File path
     .EXAMPLE
-        Get-QQFileAttr -Id [Directory or File ID] 
+        Get-QQFileAttr -Id [Directory or File ID]  
         Get-QQFileAttr -Path [Directory or File Path] 
     #>
 
