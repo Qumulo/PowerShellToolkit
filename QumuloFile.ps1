@@ -262,6 +262,86 @@ function Create-QQNewDir {
 	}
 }
 
+function Create-QQSymLink {
+<#
+        .SYNOPSIS
+            Create a new symlink 
+        .DESCRIPTION
+            Create a new symlink 
+        .PARAMETER Path [Directory Path]
+            Directory path
+        .PARAMETER Name [New Directory Name]
+            Directory name
+	.PARAMETER Target [target path of link]
+            Link target (relative path recommended)
+        .EXAMPLE
+            Create-QQSymLink -Target [Link Target] -Path [Directory Path] -Name [Symlink Name]
+        #>
+
+	[CmdletBinding()]
+	param(
+ 		[Parameter(Mandatory = $True)] [string]$Target,
+		[Parameter(Mandatory = $True)] [string]$Path,
+		[Parameter(Mandatory = $True)] [string]$Name,
+		[Parameter(Mandatory = $False)] [switch]$Json
+	)
+	if ($SkipCertificateCheck -eq 'true') {
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+	}
+
+	try {
+		# Existing BearerToken check
+		if (!$global:Credentials) {
+			Login-QQCluster
+		}
+		else {
+			if (!($global:Credentials.BearerToken -match "^(session-v1|access-v1)")) {
+				Login-QQCluster
+			}
+		}
+
+		$bearerToken = $global:Credentials.BearerToken
+		$clusterName = $global:Credentials.ClusterName
+		$portNumber = $global:Credentials.PortNumber
+
+		$TokenHeader = @{
+			Authorization = "Bearer $bearerToken"
+		}
+
+
+		$htmlPath = ([uri]::EscapeDataString($path))
+		# API url definition
+		$url = "/v1/files/$htmlPath/entries/"
+
+		# API Request body
+		$body = @{
+			"name" = $Name
+   			"old_path" = $Target
+			"action" = "CREATE_SYMLINK"
+		}
+
+
+		# API call run
+		try {
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'POST' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($body | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
+
+			# Response
+			if ($Json) {
+				return @($response) | ConvertTo-Json -Depth 10
+			}
+			else {
+				return $response
+			}
+		}
+		catch {
+			$_.Exception.Response
+		}
+	}
+	catch {
+		$_.Exception.Response
+	}
+}
+
 function Set-QQFileAttr {
 <#
     .SYNOPSIS
