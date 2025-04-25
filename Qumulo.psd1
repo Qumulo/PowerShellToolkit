@@ -129,7 +129,7 @@
 	'List-QQNFSExports','Get-QQNFSExport','Delete-QQNFSExport','Add-QQNFSExport','Modify-QQNFSExport',
 	'Add-QQNFSExportHostAccess','List-QQNFSExportHostAccess','Modify-QQNFSExportHostAccess','Remove-QQNFSExportHostAccess',
 	'Get-QQNFSSettings','Modify-QQNFSSettings ',
-	'Create-QQSourceRelationship','Authorize-QQRelationship','Delete-QQSourceRelationship'
+	'Create-QQSourceRelationship','Authorize-QQRelationship','Delete-QQSourceRelationship','Create-QQSymLink'
 
 	# Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
 	CmdletsToExport = '*'
