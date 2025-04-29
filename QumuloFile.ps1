@@ -740,30 +740,31 @@ function Read-QQDir {
 
 function Resolve-QQFilePath {
 <#
-    .SYNOPSIS
-        Resolve file IDs to paths
-    .DESCRIPTION
-        Return the full paths for each specified file ID. If a file has more than one path (due to hard links) a canonical path is chosen.
-    .PARAMETER Ids [File IDS]
-        File IDs to resolve. The IDs should be in brackets (example '1202000003').
-    .PARAMETER Snapshot [Snapshot ID]
-        Snapshot ID to read from
-    .EXAMPLE
-        Resolve-QQFilePath -Ids '1202000003','1207030003' [-Json]
-    #>
+	.SYNOPSIS
+		Resolve file IDs to paths
+	.DESCRIPTION
+		Return the full paths for each specified file ID. If a file has more than one path (due to hard links) a canonical path is chosen.
+	.PARAMETER Ids [File IDS]
+		File IDs to resolve. The IDs should be with comma (example '1202,30103,20122').
+	.PARAMETER Snapshot [Snapshot ID]
+		Snapshot ID to read from
+	.EXAMPLE
+		Resolve-QQFilePath -Ids '1202000003','1207030003' [-Json]
+#>
 
 	[CmdletBinding(DefaultParameterSetName = 'None')]
 	param(
-		[Parameter(Mandatory = $True)] [string]$Ids,
+		[Parameter(Mandatory = $true, Position = 0)] [object[]]$Ids,
 		[Parameter(Mandatory = $False)] [string]$Snapshot,
 		[Parameter(Mandatory = $False)] [switch]$Json
 	)
+	
 	if ($SkipCertificateCheck -eq 'true') {
-		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
+		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck", $true)
 	}
 
 	try {
-		# Existing BearerToken check
+		# Ensure we have a valid BearerToken
 		if (!$global:Credentials) {
 			Login-QQCluster
 		}
@@ -781,7 +782,7 @@ function Resolve-QQFilePath {
 			Authorization = "Bearer $bearerToken"
 		}
 
-		# API url definition
+		# Define the API URL
 		if ($Snapshot) {
 			$url = "/v1/files/resolve?snapshot=$Snapshot"
 		}
@@ -790,15 +791,15 @@ function Resolve-QQFilePath {
 		}
 
 
-		# API body definition
-		$body = $Ids.Split(",")
-		Write-Debug ($body | ConvertTo-Json -Depth 10)
+		$IdsAsString = $Ids | ForEach-Object { $_.ToString() }
+	
 
-		# API call ru
+		$bodyJson = ConvertTo-Json -InputObject @($IdsAsString) -Depth 10
+		Write-Debug ($bodyJson)
+
 		try {
-			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'POST' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body (@($body) | ConvertTo-Json -Depth 10) -TimeoutSec 60 -ErrorAction:Stop
+			$response = Invoke-RestMethod -SkipCertificateCheck -Method 'POST' -Uri "https://${clusterName}:$portNumber$url" -Headers $TokenHeader -ContentType "application/json" -Body ($bodyJson) -TimeoutSec 60 -ErrorAction Stop
 
-			# Response
 			if ($Json) {
 				return @($response) | ConvertTo-Json -Depth 10
 			}
@@ -814,7 +815,6 @@ function Resolve-QQFilePath {
 		$_.Exception.Response
 	}
 }
-
 
 function List-QQNamedStreams {
 <#
