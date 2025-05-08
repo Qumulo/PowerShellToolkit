@@ -57,17 +57,12 @@ function Login-QQCluster {
 		[Parameter(Mandatory = $True)][ValidateNotNullOrEmpty()][Alias("c")] [string]$clusterName,
 		[Parameter(Mandatory = $False)][ValidateNotNullOrEmpty()][Alias("p")] [int]$portNumber = 8000,
 		[Parameter(Mandatory = $False, ParameterSetName = 'Token')][Alias("token")] [string]$AccessToken,
-		[Parameter(Mandatory = $True)][Alias("u")] [string]$userName,
-		[Parameter(Mandatory = $True, ParameterSetName = 'Plain')] [Security.SecureString]${ClusterPassword},
-		[Parameter(Mandatory = $True, ParameterSetName = 'Plain')][Alias("pass")] [string]$Password
+		[Parameter(Mandatory = $False, ParameterSetName = 'Default')][Alias("u")][string]$userName,
+		[Parameter(Mandatory = $False, ParameterSetName = 'Default')][string]$Password,
+		[Parameter(Mandatory = $False, ParameterSetName = 'Default')][Security.SecureString]$SecurePassword
 	)
 
-	if ($SkipCertificateCheck -eq 'true') {
-		$PSDefaultParameterValues = @("Invoke-RestMethod:SkipCertificateCheck",$true)
-	}
-
 	if ($AccessToken) {
-		# Use the provided AccessToken directly
 		$global:Credentials = @{
 			ClusterName = $ClusterName
 			PortNumber = $PortNumber
@@ -77,19 +72,20 @@ function Login-QQCluster {
 		return
 	}
 
-	# Password handling
+	if (-not $userName) {
+		throw "Username is required when not using AccessToken."
+	}
+
 	if ($Password) {
 		$SecurePassword = $Password | ConvertTo-SecureString -AsPlainText -Force
-	} else {
-		$SecurePassword = ${ClusterPassword}
+	} elseif (-not $SecurePassword) {
+		$SecurePassword = Read-Host "Enter your password" -AsSecureString
 	}
 
-	# Login via username & password if AccessToken is not provided
 	$Body = @{
-		'username' = $UserName
-		'password' = ConvertFrom-SecureString -SecureString $SecurePassword -AsPlainText
+		username = $userName
+		password = ConvertFrom-SecureString -SecureString $SecurePassword -AsPlainText
 	}
-
 	$Url = "/v1/session/login"
 
 	try {
