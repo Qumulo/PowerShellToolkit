@@ -57,8 +57,8 @@ function Login-QQCluster {
 		[Parameter(Mandatory = $True)][ValidateNotNullOrEmpty()][Alias("c")] [string]$clusterName,
 		[Parameter(Mandatory = $False)][ValidateNotNullOrEmpty()][Alias("p")] [int]$portNumber = 8000,
 		[Parameter(Mandatory = $False, ParameterSetName = 'Token')][Alias("token")] [string]$AccessToken,
-		[Parameter(Mandatory = $True, ParameterSetName = 'Secret')][Alias("u")] [string]$userName,
-		[Parameter(Mandatory = $True, ParameterSetName = 'Secret')] [Security.SecureString]${ClusterPassword},
+		[Parameter(Mandatory = $True)][Alias("u")] [string]$userName,
+		[Parameter(Mandatory = $True, ParameterSetName = 'Plain')] [Security.SecureString]${ClusterPassword},
 		[Parameter(Mandatory = $True, ParameterSetName = 'Plain')][Alias("pass")] [string]$Password
 	)
 
