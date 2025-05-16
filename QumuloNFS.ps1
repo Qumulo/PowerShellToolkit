@@ -1066,8 +1066,6 @@ function List-QQNFSExports {
 					}
 				}
 				elseif ($ExportPath) {
-					# Response
-					$nfsExports = $response.entries
 					foreach ($export in $nfsExports) {
 						if (($ExportPath -eq $export.export_path) -and ($TenantID -eq $export.tenant_id)) {
 							$ExportId = $export.id
